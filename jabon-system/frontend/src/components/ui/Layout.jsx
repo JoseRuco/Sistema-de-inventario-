@@ -13,6 +13,8 @@ import {
   CreditCard,
   Settings,
 } from "lucide-react";
+import InstallPWA from "./InstallPWA";
+
 
 const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -161,6 +163,9 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
         {/* Content */}
         <main className="flex-1 overflow-auto p-4 lg:p-8">{children}</main>
       </div>
+
+      {/* PWA Install Prompt */}
+      <InstallPWA />
     </div>
   );
 };
