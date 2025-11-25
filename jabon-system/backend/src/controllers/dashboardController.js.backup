@@ -1,0 +1,307 @@
+const db = require('../config/database');
+
+// Función para obtener la fecha actual local (sin hora)
+const getLocalDate = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Función para obtener año-mes actual local
+const getLocalYearMonth = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+};
+
+// Generar array de fechas entre dos fechas
+const generateDateRange = (startDate, endDate) => {
+  const dates = [];
+  const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+  const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+
+  let year = startYear;
+  let month = startMonth;
+  let day = startDay;
+
+  while (true) {
+    const currentDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    dates.push(currentDate);
+
+    if (year === endYear && month === endMonth && day === endDay) break;
+
+    day++;
+    const daysInMonth = new Date(year, month, 0).getDate();
+    if (day > daysInMonth) {
+      day = 1;
+      month++;
+      if (month > 12) {
+        month = 1;
+        year++;
+      }
+    }
+  }
+
+  return dates;
+};
+
+const getDashboardStats = (req, res) => {
+  try {
+    const fechaHoy = getLocalDate();
+    const mesActual = getLocalYearMonth();
+
+    console.log('📅 Fecha hoy:', fechaHoy);
+    console.log('📅 Mes actual:', mesActual);
+
+    // Total de productos
+    const totalProducts = db.prepare('SELECT COUNT(*) as count FROM productos WHERE activo = 1').get().count;
+
+
+    // Total de clientes activos
+    const totalClients = db.prepare('SELECT COUNT(*) as count FROM clientes WHERE activo = 1').get().count;
+
+    // ✅ VENTAS DE HOY - Solo dinero pagado
+    const salesToday = db.prepare(`
+      SELECT COUNT(*) as count, COALESCE(SUM(monto_pagado), 0) as total
+      FROM ventas
+      WHERE DATE(fecha) = ?
+    `).get(fechaHoy);
+
+    // ✅ VENTAS DEL MES - Solo dinero pagado
+    const salesMonth = db.prepare(`
+      SELECT COUNT(*) as count, COALESCE(SUM(monto_pagado), 0) as total
+      FROM ventas
+      WHERE strftime('%Y-%m', fecha) = ?
+    `).get(mesActual);
+
+    // Productos con bajo stock (menos de 10 unidades) - SOLO ACTIVOS
+    const lowStock = db.prepare(`
+  SELECT id, nombre, tipo, presentacion, stock
+  FROM productos
+  WHERE stock < 10 AND activo = 1
+  ORDER BY stock ASC
+  LIMIT 5
+`).all();
+
+    // Ventas recientes (últimas 5)
+    const recentSales = db.prepare(`
+      SELECT 
+        v.id,
+        v.fecha,
+        v.total,
+        v.metodo_pago,
+        c.nombre as cliente_nombre
+      FROM ventas v
+      LEFT JOIN clientes c ON v.cliente_id = c.id
+      ORDER BY v.fecha DESC
+      LIMIT 5
+    `).all();
+
+    console.log('✅ Stats calculados correctamente');
+    console.log('📊 Ventas hoy:', salesToday);
+    console.log('📊 Ventas mes:', salesMonth);
+
+    res.json({
+      totalProducts,
+      totalClients,
+      salesToday: {
+        count: salesToday.count,
+        total: salesToday.total
+      },
+      salesMonth: {
+        count: salesMonth.count,
+        total: salesMonth.total
+      },
+      lowStock,
+      recentSales
+    });
+
+  } catch (error) {
+    console.error('❌ Error en getDashboardStats:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getChartData = (req, res) => {
+  try {
+    const fechaHoy = getLocalDate();
+    const fechaInicio = new Date();
+    fechaInicio.setDate(fechaInicio.getDate() - 29);
+    const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
+
+    console.log('📊 Generando charts desde:', fechaInicioStr, 'hasta:', fechaHoy);
+
+    // ✅ VENTAS POR DÍA - Solo dinero pagado
+    const salesData = db.prepare(`
+      SELECT DATE(fecha) as fecha,
+             COUNT(*) as cantidad,
+             SUM(monto_pagado) as total
+      FROM ventas
+      WHERE DATE(fecha) BETWEEN ? AND ?
+      GROUP BY DATE(fecha)
+      ORDER BY DATE(fecha)
+    `).all(fechaInicioStr, fechaHoy);
+
+    const allDates = generateDateRange(fechaInicioStr, fechaHoy);
+
+    const salesByDay = allDates.map(date => {
+      const found = salesData.find(s => s.fecha === date);
+      return {
+        fecha: new Date(date + 'T00:00:00').toLocaleDateString('es-CO', {
+          month: 'short',
+          day: 'numeric'
+        }),
+        ventas: found ? found.cantidad : 0,
+        ingresos: found ? found.total : 0
+      };
+    });
+
+    // Top productos más vendidos
+    const topProducts = db.prepare(`
+      SELECT 
+        p.nombre,
+        p.tipo,
+        p.presentacion,
+        SUM(vd.cantidad) as cantidad_vendida,
+        SUM(vd.subtotal) as total_vendido
+      FROM ventas_detalles vd
+      INNER JOIN productos p ON vd.producto_id = p.id
+      GROUP BY vd.producto_id
+      ORDER BY cantidad_vendida DESC
+      LIMIT 5
+    `).all();
+
+    console.log('✅ Charts generados correctamente');
+
+    res.json({
+      salesByDay,
+      topProducts
+    });
+
+  } catch (error) {
+    console.error('❌ Error en getChartData:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getReports = (req, res) => {
+  try {
+    const { fecha_inicio, fecha_fin, tipo } = req.query;
+
+    console.log('📊 Generando reporte:', { fecha_inicio, fecha_fin, tipo });
+
+    if (!fecha_inicio || !fecha_fin) {
+      return res.status(400).json({
+        error: 'Se requieren fecha_inicio y fecha_fin'
+      });
+    }
+
+    if (tipo === 'ventas') {
+      // ✅ REPORTE DE VENTAS - Solo dinero pagado
+      const salesData = db.prepare(`
+        SELECT 
+          DATE(fecha) as fecha,
+          COUNT(*) as num_ventas,
+          SUM(monto_pagado) as total_ventas,
+          SUM(CASE WHEN metodo_pago = 'efectivo' THEN monto_pagado ELSE 0 END) as efectivo,
+          SUM(CASE WHEN metodo_pago = 'tarjeta' THEN monto_pagado ELSE 0 END) as tarjeta,
+          SUM(CASE WHEN metodo_pago = 'transferencia' THEN monto_pagado ELSE 0 END) as transferencia
+        FROM ventas
+        WHERE DATE(fecha) BETWEEN ? AND ?
+        GROUP BY DATE(fecha)
+        ORDER BY DATE(fecha)
+      `).all(fecha_inicio, fecha_fin);
+
+      const totalVentas = salesData.reduce((sum, day) => sum + day.num_ventas, 0);
+      const totalIngresos = salesData.reduce((sum, day) => sum + (day.total_ventas || 0), 0);
+
+      console.log('✅ Reporte de ventas generado:', { totalVentas, totalIngresos });
+
+      res.json({
+        tipo: 'ventas',
+        fecha_inicio,
+        fecha_fin,
+        totalVentas,
+        totalIngresos,
+        data: salesData.map(day => ({
+          fecha: day.fecha,
+          ventas: day.num_ventas,
+          ingresos: day.total_ventas || 0,
+          efectivo: day.efectivo || 0,
+          tarjeta: day.tarjeta || 0,
+          transferencia: day.transferencia || 0
+        return res.status(400).json({
+            error: 'Se requieren fecha_inicio y fecha_fin'
+          });
+        }
+
+      const topProducts = db.prepare(`
+      SELECT 
+        p.nombre,
+        p.tipo,
+        p.presentacion,
+        SUM(vd.cantidad) as cantidad_vendida,
+        SUM(vd.subtotal) as total_vendido
+      FROM ventas_detalles vd
+      INNER JOIN productos p ON vd.producto_id = p.id
+      INNER JOIN ventas v ON vd.venta_id = v.id
+      WHERE DATE(v.fecha) BETWEEN ? AND ?
+      GROUP BY vd.producto_id
+      ORDER BY cantidad_vendida DESC
+      LIMIT 10
+    `).all(fecha_inicio, fecha_fin);
+
+        res.json({
+          fecha_inicio,
+          fecha_fin,
+          productos: topProducts
+        });
+
+      } catch (error) {
+        console.error('❌ Error en getTopProductsByDateRange:', error);
+        res.status(500).json({ error: error.message });
+      }
+    };
+
+    const getSalesByTypeThisMonth = (req, res) => {
+      try {
+        const getLocalYearMonth = () => {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          return `${year}-${month}`;
+        };
+        const mesActual = getLocalYearMonth();
+        const salesByType = db.prepare(`
+      SELECT 
+        p.tipo,
+        SUM(vd.cantidad) as cantidad_vendida
+      FROM ventas v
+      INNER JOIN ventas_detalles vd ON v.id = vd.venta_id
+      INNER JOIN productos p ON vd.producto_id = p.id
+      WHERE p.activo = 1
+        AND strftime('%Y-%m', v.fecha) = ?
+      GROUP BY p.tipo
+      ORDER BY cantidad_vendida DESC
+    `).all(mesActual);
+        res.json({ salesByType });
+      } catch (error) {
+        console.error('❌ Error en getSalesByTypeThisMonth:', error);
+        res.status(500).json({ error: error.message });
+      }
+    };
+
+
+    // Añade al export:
+    module.exports.getSalesByTypeThisMonth = getSalesByTypeThisMonth;
+
+    module.exports = {
+      getDashboardStats,
+      getChartData,
+      getReports,
+      getTopProductsByDateRange,
+      getSalesByTypeThisMonth
+    };

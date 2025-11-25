@@ -1,0 +1,26 @@
+{
+  "name": "jabon-system-backend",
+  "version": "1.0.0",
+  "description": "Backend para sistema de inventario y ventas de jabones",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": [
+    "inventario",
+    "ventas",
+    "jabones"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^9.2.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "nodemailer": "^7.0.10"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
