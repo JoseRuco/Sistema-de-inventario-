@@ -1,0 +1,33 @@
+services:
+  # Servicio Frontend (Nginx + React App)
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80" # Mapea puerto 80 del host al 80 del contenedor
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf # Inyectar nuestra config de Nginx
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - app-network
+
+  # Servicio Backend (Node.js API)
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "3000:3000" # Opcional: solo si quieres acceder a la API directamente
+    volumes:
+      - ./backend/data:/app/data # Persistencia de datos (SQLite y adjuntos)
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: always
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
