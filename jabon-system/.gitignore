@@ -1,25 +1,151 @@
-# Dependencies
+# ========================================
+# DEPENDENCIES
+# ========================================
 node_modules/
 npm-debug.log*
-package-lock.json
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnp
+.pnp.js
 
-# Database
+# ========================================
+# DATABASE (SQLite)
+# ========================================
+# Archivos de base de datos
 *.db
-*.db-journal
-*.db.backup
+*.sqlite
+*.sqlite3
 
-# Environment
+# Archivos temporales de SQLite (WAL mode)
+*.db-shm
+*.db-wal
+*.db-journal
+
+# Respaldos de base de datos
+*.db.backup
+*.db.bak
+*.backup
+database_vieja.db
+
+# ========================================
+# ENVIRONMENT & SECRETS
+# ========================================
 .env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
 
-# Build
+# Archivos de configuración con credenciales
+config.local.js
+secrets.json
+credentials.json
+
+# ========================================
+# BUILD & DISTRIBUTION
+# ========================================
 dist/
 build/
+out/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.vite/
 
-# OS
+# ========================================
+# LOGS
+# ========================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ========================================
+# OPERATING SYSTEM
+# ========================================
+# macOS
 .DS_Store
-Thumbs.db
+.AppleDouble
+.LSOverride
+._*
 
-# IDE
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ========================================
+# IDE & EDITORS
+# ========================================
+# VSCode
 .vscode/
+*.code-workspace
+
+# JetBrains (WebStorm, IntelliJ, etc.)
 .idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ========================================
+# TESTING & COVERAGE
+# ========================================
+coverage/
+*.lcov
+.nyc_output/
+.jest/
+
+# ========================================
+# TEMPORARY FILES
+# ========================================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+.cache
+
+# ========================================
+# UPLOADS & USER CONTENT (si aplica)
+# ========================================
+uploads/
+temp/
+tmp/
+
+# ========================================
+# PACKAGE MANAGER
+# ========================================
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ========================================
+# MISC
+# ========================================
+.eslintcache
+.stylelintcache

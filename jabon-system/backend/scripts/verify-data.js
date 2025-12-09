@@ -1,4 +1,4 @@
-const db = require('./src/config/database');
+const db = require('../src/config/database');
 
 console.log('\n=== VERIFICACIÓN DE DATOS ===\n');
 

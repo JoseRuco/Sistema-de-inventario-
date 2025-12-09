@@ -1,14 +1,16 @@
 {
+  "id": "inventario-system",
   "name": "Sistema de Inventario",
   "short_name": "Inventario",
-  "description": "Sistema de gestión de inventario, ventas y clientes",
+  "description": "Sistema profesional de gestión de inventario, ventas y clientes",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui"],
+  "orientation": "portrait",
+  "categories": ["productivity", "business", "finance"],
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
-  "orientation": "portrait-primary",
   "scope": "/",
-  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -23,44 +25,16 @@
       "purpose": "any"
     },
     {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
       "src": "/icons/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Nueva Venta",
-      "short_name": "Venta",
-      "description": "Registrar una nueva venta",
-      "url": "/?view=sales",
-      "icons": [
-        {
-          "src": "/icons/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Dashboard",
-      "short_name": "Inicio",
-      "description": "Ver panel principal",
-      "url": "/",
-      "icons": [
-        {
-          "src": "/icons/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
     }
   ]
 }

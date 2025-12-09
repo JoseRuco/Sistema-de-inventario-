@@ -12,6 +12,7 @@ import {
   PackageCheck,
   CreditCard,
   Settings,
+  TrendingUp,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 
@@ -27,8 +28,9 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
     { id: 'credits', label: 'Cuentas por Cobrar', icon: CreditCard },
     { id: "history", label: "Historial de ventas", icon: History },
     { id: "stockHistory", label: "Historial de Stock", icon: PackageCheck },
+    { id: "analytics", label: "Análisis de Negocio", icon: TrendingUp },
     { id: "reports", label: "Reportes", icon: BarChart3 },
-    { id: "config", label: "Configuración", icon: Settings },
+    //{ id: "config", label: "Configuración", icon: Settings },
   ];
 
   return (
@@ -39,7 +41,7 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
           <div className="inline-flex w-25 h-30 just">
             <img
               draggable="false"
-              src="src/components/ui/Programmer-SINFONDO.png"
+              src="src/components/ui/img/programmer-SINFONDO.png"
               alt=""
             />
           </div>
@@ -87,7 +89,7 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
               <div className="inline-flex w-25 h-50 ">
                 <img
                   draggable="false"
-                  src="src/components/ui/Programmer-SINFONDO.png"
+                  src="src/components/ui/img/Programmer-SINFONDO.png"
                   alt=""
                 />
               </div>

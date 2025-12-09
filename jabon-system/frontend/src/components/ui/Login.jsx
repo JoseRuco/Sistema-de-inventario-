@@ -13,7 +13,8 @@ const Login = ({ onLogin }) => {
   // CONFIGURACIÓN DE CREDENCIALES (Modificar aquí)
   const VALID_CREDENTIALS = {
     username: 'Administrador',
-    password: 'admin123'
+    password: 'ProgrammerJR',
+
   };
 
 
@@ -53,9 +54,9 @@ const Login = ({ onLogin }) => {
         {/* Logo y título */}
         <div className="text-center mb-8 animate-slide-up">
           <div className="inline-flex items-center justify-center w-60 h-20  mb-0 ">
-            <img draggable='false'  src="src/components/ui/Programmer-SINFONDO.png" alt="" />
+            <img draggable='false' src="src/components/ui/img/Programmer-SINFONDO.png" alt="" />
           </div>
-         
+
           <p className="text-gray-600">Sistema de Inventario y Ventas</p>
         </div>
 

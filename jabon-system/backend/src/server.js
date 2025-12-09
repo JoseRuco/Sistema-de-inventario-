@@ -9,6 +9,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const stockRoutes = require('./routes/stockRoutes');
 const creditRoutes = require('./routes/creditRoutes');
 const configRoutes = require('./routes/configRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 const app = express();
 const PORT = 5000;
@@ -30,6 +31,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/credits', creditRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
@@ -68,8 +70,10 @@ app.listen(PORT, '0.0.0.0', () => {
 ║ 📊 /api/dashboard                                     ║ 
 ║ 📋 /api/stock                                         ║     
 ║ ⚙️ /api/config                                        ║
+║ 📈 /api/analytics                                     ║
 ║                                                       ║    
 ║            SISTEMA REALIAZADO POR: JOSE RUCO          ║
+║                                                       ║
 ║                   PROGRAMMER {JR}                     ║
 ║                  software solutions                   ║
 ║                                                       ║  

@@ -169,12 +169,36 @@ const SaleDetailsModal = ({ isOpen, ventaId, onClose }) => {
             </h3>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-center pb-3 border-b border-blue-200">
-                <span className="text-gray-700 font-medium">Total:</span>
-                <span className="text-2xl font-bold text-blue-700">
-                  ${(sale.total || 0).toLocaleString()}
-                </span>
-              </div>
+              {/* Mostrar descuento si existe */}
+              {sale.descuento && sale.descuento > 0 ? (
+                <>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">Subtotal:</span>
+                    <span className="font-semibold text-gray-800">
+                      ${((sale.total || 0) + (sale.descuento || 0)).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-purple-600 font-medium">Descuento Ocasional:</span>
+                    <span className="font-semibold text-purple-600">
+                      -${(sale.descuento || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-blue-200 pt-2">
+                    <span className="text-gray-700 font-medium">Total:</span>
+                    <span className="text-2xl font-bold text-blue-700">
+                      ${(sale.total || 0).toLocaleString()}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex justify-between items-center pb-3 border-b border-blue-200">
+                  <span className="text-gray-700 font-medium">Total:</span>
+                  <span className="text-2xl font-bold text-blue-700">
+                    ${(sale.total || 0).toLocaleString()}
+                  </span>
+                </div>
+              )}
 
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 text-sm flex items-center gap-2">

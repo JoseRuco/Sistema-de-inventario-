@@ -188,7 +188,7 @@ const Dashboard = () => {
               <LineChart data={charts?.salesByDay || []}>
                 <defs>
                   <linearGradient id="colorIngresos" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.5} />
                     <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
@@ -227,10 +227,10 @@ const Dashboard = () => {
                   type="monotone"
                   dataKey="ingresos"
                   stroke="#3b82f6"
-                  strokeWidth={3}
+                  strokeWidth={2}
                   name="Ingresos ($)"
-                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 1 }}
-                  activeDot={{ r: 5 }}
+                  dot={{ r: 3 }}
+                  activeDot={{ r: 8 }}
                   fill="url(#colorIngresos)"
                 />
               </LineChart>
@@ -370,8 +370,8 @@ const Dashboard = () => {
                       <div className="flex items-center gap-2">
                         {index < 3 ? (
                           <Award className={`${index === 0 ? 'text-yellow-500' :
-                              index === 1 ? 'text-gray-400' :
-                                'text-orange-500'
+                            index === 1 ? 'text-gray-400' :
+                              'text-orange-500'
                             }`} size={16} />
                         ) : null}
                         <span className="text-sm font-semibold text-gray-700">{index + 1}</span>

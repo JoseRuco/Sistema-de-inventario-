@@ -256,7 +256,7 @@ const Credits = () => {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-100 py-4">
                       {getStatusBadge(debt.estado_pago)}
                     </td>
                     <td className="px-6 py-4 text-right font-semibold text-gray-800">

@@ -10,6 +10,7 @@ import StockHistory from './components/ui/StockHistory';
 import Login from './components/ui/Login';
 import Credits from './components/ui/Credits';
 import Configuracion from './components/ui/Configuracion';
+import Analytics from './components/ui/Analytics';
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -21,6 +22,30 @@ function App() {
     if (authStatus === 'true') {
       setIsAuthenticated(true);
     }
+  }, []);
+
+  // Detectar si se abrió desde pantalla de inicio (PWA)
+  useEffect(() => {
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone ||
+      document.referrer.includes('android-app://');
+
+    if (isPWA) {
+      console.log('✅ App abierta en modo PWA standalone');
+      // Ocultar barra de direcciones en Android si es posible
+      if (window.screen && window.screen.orientation) {
+        try {
+          window.screen.orientation.lock('portrait').catch(() => { });
+        } catch (e) { }
+      }
+    } else {
+      console.log('ℹ️ App abierta en navegador normal');
+    }
+
+    // Prevenir zoom en iOS PWA
+    document.addEventListener('gesturestart', function (e) {
+      e.preventDefault();
+    });
   }, []);
 
   // Función para manejar login exitoso
@@ -53,6 +78,7 @@ function App() {
       {currentView === 'history' && <SalesHistory />}
       {currentView === 'stockHistory' && <StockHistory />}
       {currentView === 'credits' && <Credits />}
+      {currentView === 'analytics' && <Analytics />}
       {currentView === 'reports' && <Reports />}
       {currentView === 'config' && <Configuracion />}
     </Layout>

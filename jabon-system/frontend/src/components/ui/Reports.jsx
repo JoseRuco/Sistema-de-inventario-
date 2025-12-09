@@ -212,6 +212,24 @@ const Reports = () => {
               </div>
             </div>
 
+             {/* Nueva tarjeta de Descuentos */}
+              {stats.totalDiscounts > 0 && (
+                <div className="card bg-purple-50 border-purple-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-600 text-sm mb-1 font-medium">Descuentos Aplicados</p>
+                      <p className="text-3xl font-bold text-purple-600">
+                        ${stats.totalDiscounts.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-purple-500 mt-1">Descuentos ocasionales</p>
+                    </div>
+                    <div className="p-3 bg-purple-100 rounded-lg">
+                      <DollarSign size={24} className="text-purple-600" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
             <div className="card">
               <div className="flex items-center justify-between">
                 <div>

@@ -7,27 +7,33 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
-    <link rel="icon" href="/PNGLOGO.png">
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="logo/PNGLOGO.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 
     <!-- Theme Color -->
     <meta name="theme-color" content="#3b82f6" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#3b82f6" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1e40af" />
+
+    <!-- Mobile Web App - Force Standalone -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <!-- Viewport -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
 
     <!-- SEO Meta Tags -->
     <meta name="description" content="Sistema de gestión de inventario, ventas y clientes - PWA" />
     <meta name="keywords" content="inventario, ventas, clientes, gestión, pwa" />
 
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <!-- Apple Mobile Web App -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- Apple Mobile Web App Title -->
     <meta name="apple-mobile-web-app-title" content="Inventario" />
 
     <!-- Microsoft Tiles -->

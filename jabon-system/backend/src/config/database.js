@@ -1,7 +1,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const dbPath = path.resolve(__dirname, '../../database_vieja.db');
+const dbPath = path.resolve(__dirname, '../../db/database_vieja.db');
 const db = new Database(dbPath);
 console.log('✅ Base de datos conectada en:', dbPath);
 
@@ -38,18 +38,22 @@ const initDB = () => {
     )
   `);
 
-  // Tabla de ventas
+  // Tabla de ventas CON columnas para sistema de créditos
   db.exec(`
     CREATE TABLE IF NOT EXISTS ventas (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
       cliente_id INTEGER,
       total REAL NOT NULL,
+      estado_pago TEXT DEFAULT 'pagado',
+      monto_pagado REAL DEFAULT 0,
+      monto_pendiente REAL DEFAULT 0,
+      metodo_pago TEXT DEFAULT 'efectivo',
       FOREIGN KEY (cliente_id) REFERENCES clientes(id)
     )
   `);
 
-  // Tabla de detalle de ventas
+  // Tabla de detalle de ventas (legacy - mantener por compatibilidad)
   db.exec(`
     CREATE TABLE IF NOT EXISTS detalle_ventas (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,6 +63,52 @@ const initDB = () => {
       precio_unitario REAL NOT NULL,
       subtotal REAL NOT NULL,
       FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE,
+      FOREIGN KEY (producto_id) REFERENCES productos(id)
+    )
+  `);
+
+  // Tabla de ventas_detalles (versión actualizada)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ventas_detalles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      venta_id INTEGER NOT NULL,
+      producto_id INTEGER NOT NULL,
+      cantidad INTEGER NOT NULL,
+      precio_unitario REAL NOT NULL,
+      subtotal REAL NOT NULL,
+      FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE,
+      FOREIGN KEY (producto_id) REFERENCES productos(id)
+    )
+  `);
+
+  // Tabla de abonos para sistema de créditos
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS abonos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      venta_id INTEGER NOT NULL,
+      cliente_id INTEGER NOT NULL,
+      monto REAL NOT NULL,
+      fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+      metodo_pago TEXT DEFAULT 'efectivo',
+      notas TEXT,
+      FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE,
+      FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+    )
+  `);
+
+  // Tabla de movimientos de stock (historial de inventario)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS stock_movimientos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      producto_id INTEGER NOT NULL,
+      tipo TEXT NOT NULL,
+      cantidad INTEGER NOT NULL,
+      stock_anterior INTEGER NOT NULL,
+      stock_nuevo INTEGER NOT NULL,
+      motivo TEXT,
+      referencia_tipo TEXT,
+      referencia_id INTEGER,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (producto_id) REFERENCES productos(id)
     )
   `);
@@ -82,6 +132,19 @@ const initDB = () => {
     insertConfig.run('smtp_port', '587');
     insertConfig.run('smtp_user', '');
     insertConfig.run('smtp_pass', '');
+  }
+
+  // Añadir columna descuento si no existe
+  try {
+    const tableInfo = db.prepare("PRAGMA table_info(ventas)").all();
+    const hasDescuento = tableInfo.some(col => col.name === 'descuento');
+    
+    if (!hasDescuento) {
+      db.exec('ALTER TABLE ventas ADD COLUMN descuento REAL DEFAULT 0');
+      console.log('✅ Columna descuento añadida a la tabla ventas');
+    }
+  } catch (error) {
+    console.error('Error verificando/añadiendo columna descuento:', error);
   }
 
   console.log('✅ Base de datos inicializada correctamente');

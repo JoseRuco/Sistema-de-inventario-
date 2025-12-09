@@ -127,14 +127,24 @@ const getDashboardStats = (req, res) => {
 const getChartData = (req, res) => {
   try {
     const fechaHoy = getLocalDate();
+
+    // 1. Para el Gráfico: ÚLTIMOS 30 DÍAS (ventana móvil)
+    const fechaInicioChart = new Date();
+    fechaInicioChart.setDate(fechaInicioChart.getDate() - 29);
+    const fechaInicioChartStr = fechaInicioChart.toISOString().split('T')[0];
+
+    // 2. Para Top Productos: DESDE EL 1 DEL MES ACTUAL (se reinicia)
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
-    const fechaInicioStr = `${year}-${month}-01`;
+    const fechaInicioMesStr = `${year}-${month}-01`;
 
-    console.log('📊 Generando charts desde:', fechaInicioStr, 'hasta:', fechaHoy);
+    console.log('📊 Generando charts:', {
+      grafico: { desde: fechaInicioChartStr, hasta: fechaHoy },
+      topProductos: { desde: fechaInicioMesStr, hasta: fechaHoy }
+    });
 
-    // ✅ VENTAS POR DÍA - Solo ventas PAGADAS AL 100%
+    // ✅ VENTAS POR DÍA - Solo ventas PAGADAS AL 100% (Últimos 30 días)
     const salesData = db.prepare(`
       SELECT DATE(fecha) as fecha,
              COUNT(*) as cantidad,
@@ -144,9 +154,9 @@ const getChartData = (req, res) => {
       AND monto_pagado >= total
       GROUP BY DATE(fecha)
       ORDER BY DATE(fecha)
-    `).all(fechaInicioStr, fechaHoy);
+    `).all(fechaInicioChartStr, fechaHoy);
 
-    const allDates = generateDateRange(fechaInicioStr, fechaHoy);
+    const allDates = generateDateRange(fechaInicioChartStr, fechaHoy);
 
     const salesByDay = allDates.map(date => {
       const found = salesData.find(s => s.fecha === date);
@@ -160,7 +170,7 @@ const getChartData = (req, res) => {
       };
     });
 
-    // Top productos más vendidos (Solo de ventas PAGADAS)
+    // Top productos más vendidos (Solo de ventas PAGADAS - Mes Actual)
     const topProducts = db.prepare(`
       SELECT 
         p.nombre,
@@ -179,7 +189,7 @@ const getChartData = (req, res) => {
       WHERE p.activo = 1
       GROUP BY p.id
       ORDER BY cantidad_vendida DESC
-    `).all(fechaInicioStr, fechaHoy);
+    `).all(fechaInicioMesStr, fechaHoy);
 
     console.log('✅ Charts generados correctamente');
 
@@ -213,10 +223,12 @@ const getReports = (req, res) => {
           v.id,
           v.fecha,
           v.total,
+          v.descuento,
           v.monto_pagado,
           v.estado_pago,
           c.nombre as cliente_nombre,
-          COALESCE(SUM(vd.subtotal - (vd.cantidad * p.precio_costo)), 0) as ganancia
+          COALESCE(SUM(vd.subtotal), 0) as subtotal_productos,
+          COALESCE(SUM(vd.subtotal - (vd.cantidad * p.precio_costo)) - v.descuento, 0) as ganancia
         FROM ventas v
         LEFT JOIN clientes c ON v.cliente_id = c.id
         LEFT JOIN ventas_detalles vd ON v.id = vd.venta_id
@@ -230,6 +242,7 @@ const getReports = (req, res) => {
       const paidSales = salesData.filter(sale => sale.monto_pagado >= sale.total);
       const totalVentas = paidSales.length;
       const totalIngresos = paidSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
+      const totalDescuentos = paidSales.reduce((sum, sale) => sum + (sale.descuento || 0), 0);
       const totalGanancias = paidSales.reduce((sum, sale) => sum + (sale.ganancia || 0), 0);
 
       console.log('✅ Reporte de ventas generado:', { totalVentas, totalIngresos, totalGanancias });
@@ -240,26 +253,36 @@ const getReports = (req, res) => {
         fecha_fin,
         totalVentas,
         totalIngresos,
+        totalDescuentos,
         totalGanancias,
         data: salesData // Incluye TODAS las ventas
       });
 
     } else if (tipo === 'ganancias') {
       // ✅ Reporte de ganancias - Solo ventas PAGADAS AL 100%
+      // CORRECCIÓN: Usamos subconsulta para evitar duplicar v.total por cada producto
       const profitData = db.prepare(`
         SELECT 
-          DATE(v.fecha) as fecha,
-          COUNT(DISTINCT v.id) as num_ventas,
-          SUM(vd.subtotal) as ingresos,
-          SUM(vd.cantidad * p.precio_costo) as costos,
-          SUM(vd.subtotal - (vd.cantidad * p.precio_costo)) as ganancia
-        FROM ventas v
-        LEFT JOIN ventas_detalles vd ON v.id = vd.venta_id
-        LEFT JOIN productos p ON vd.producto_id = p.id
-        WHERE DATE(v.fecha) BETWEEN ? AND ?
-        AND v.monto_pagado >= v.total
-        GROUP BY DATE(v.fecha)
-        ORDER BY DATE(v.fecha)
+          fecha,
+          COUNT(id) as num_ventas,
+          SUM(total_venta) as ingresos,
+          SUM(costo_venta) as costos,
+          SUM(total_venta - costo_venta) as ganancia
+        FROM (
+          SELECT 
+            DATE(v.fecha) as fecha,
+            v.id,
+            v.total as total_venta,
+            COALESCE(SUM(vd.cantidad * p.precio_costo), 0) as costo_venta
+          FROM ventas v
+          LEFT JOIN ventas_detalles vd ON v.id = vd.venta_id
+          LEFT JOIN productos p ON vd.producto_id = p.id
+          WHERE DATE(v.fecha) BETWEEN ? AND ?
+          AND v.monto_pagado >= v.total
+          GROUP BY v.id
+        )
+        GROUP BY fecha
+        ORDER BY fecha
       `).all(fecha_inicio, fecha_fin);
 
       // ✅ Generar rango completo de fechas (incluyendo días sin ventas)
@@ -283,7 +306,8 @@ const getReports = (req, res) => {
       const salesStats = db.prepare(`
         SELECT 
           COUNT(*) as total_ventas,
-          COALESCE(SUM(total), 0) as total_ingresos
+          COALESCE(SUM(total), 0) as total_ingresos,
+          COALESCE(SUM(descuento), 0) as total_descuentos
         FROM ventas
         WHERE DATE(fecha) BETWEEN ? AND ?
         AND monto_pagado >= total
@@ -303,8 +327,11 @@ const getReports = (req, res) => {
 
       const totalVentas = salesStats.total_ventas;
       const totalIngresos = salesStats.total_ingresos;
+      const totalDescuentos = salesStats.total_descuentos;
       const totalCostos = profitStats.total_costos;
-      const totalGanancias = profitStats.total_ganancias;
+      // La ganancia real debe considerar el descuento:
+      // ganancia = (ingresos items - costos) - descuentos totales
+      const totalGanancias = profitStats.total_ganancias - totalDescuentos;
 
       // 3. Contar ventas sin pagar (pendientes o parciales)
       const unpaidCount = db.prepare(`
@@ -322,6 +349,7 @@ const getReports = (req, res) => {
         fecha_fin,
         totalVentas,
         totalIngresos,
+        totalDescuentos,
         totalCostos,
         totalGanancias,
         unpaidSales: unpaidCount.count, // Agregar contador de ventas sin pagar

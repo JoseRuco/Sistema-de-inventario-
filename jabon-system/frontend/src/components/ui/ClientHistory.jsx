@@ -226,10 +226,27 @@ const calculateTotal = () => {
                           </div>
                           
                           <div className="text-right">
-                            <p className="text-xs text-gray-500 mb-1">Total</p>
-                            <p className="text-2xl font-bold text-green-600">
-                              ${sale.total.toLocaleString()}
-                            </p>
+                            {sale.descuento && sale.descuento > 0 ? (
+                              <>
+                                <p className="text-xs text-gray-400 line-through">
+                                  ${(sale.total + sale.descuento).toLocaleString()}
+                                </p>
+                                <p className="text-xs text-purple-600 font-semibold">
+                                  Descuento: -${sale.descuento.toLocaleString()}
+                                </p>
+                                <p className="text-xs text-gray-500 mb-1">Total</p>
+                                <p className="text-2xl font-bold text-green-600">
+                                  ${sale.total.toLocaleString()}
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-xs text-gray-500 mb-1">Total</p>
+                                <p className="text-2xl font-bold text-green-600">
+                                  ${sale.total.toLocaleString()}
+                                </p>
+                              </>
+                            )}
                           </div>
                         </div>
 

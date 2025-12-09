@@ -24,7 +24,7 @@ const getTransporter = () => {
     });
 };
 
-const sendLowStockAlert = async (productName, currentStock) => {
+const sendLowStockAlert = async (productName, presentacion, currentStock) => {
     try {
         const config = db.prepare('SELECT clave, valor FROM configuracion').all();
         const settings = config.reduce((acc, curr) => {
@@ -169,6 +169,10 @@ const sendLowStockAlert = async (productName, currentStock) => {
                     <tr>
                         <td>📦 Producto:</td>
                         <td><strong>${productName}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>📏 Presentación:</td>
+                        <td><strong>${presentacion}</strong></td>
                     </tr>
                     <tr>
                         <td>📊 Stock Actual:</td>

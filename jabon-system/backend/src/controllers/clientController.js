@@ -153,11 +153,12 @@ const getClientPurchaseHistory = (req, res) => {
     }
 
     // Obtener ventas del cliente con detalles
-    const sales = db.prepare(`
+const sales = db.prepare(`
       SELECT 
         v.id,
         v.fecha,
         v.total,
+        v.descuento,
         v.metodo_pago,
         v.estado_pago,
         v.monto_pagado,

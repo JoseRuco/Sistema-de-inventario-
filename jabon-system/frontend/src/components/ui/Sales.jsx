@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { ShoppingCart, Plus, Trash2, Check, CreditCard, Wallet, DollarSign, X, User, Search } from 'lucide-react';
-import { getProducts, getClients, createSale, createClient } from '../../services/api';
+import { getProducts, getClients, createSale, createClient, getClientDebt } from '../../services/api';
 import Notification from './Notification';
 import SuccessModal from './SuccessModal';
 import ClientFormModal from './ClientFormModal';
+import SaleConfirmationModal from './SaleConfirmationModal';
 
 const Sales = () => {
   const [products, setProducts] = useState([]);
@@ -13,6 +14,14 @@ const Sales = () => {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
   const [successModal, setSuccessModal] = useState({ isOpen: false, amount: 0, saleType: 'contado' });
+
+  // Estados para animaciones y confirmación
+  const [animatingProduct, setAnimatingProduct] = useState(null);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [clientDebt, setClientDebt] = useState(0);
+
+  // Estado para búsqueda de productos
+  const [productSearch, setProductSearch] = useState('');
 
   // Estados para búsqueda de cliente
   const [clientSearch, setClientSearch] = useState('');
@@ -29,6 +38,9 @@ const Sales = () => {
   const [paymentType, setPaymentType] = useState('contado');
   const [paymentMethod, setPaymentMethod] = useState('efectivo');
   const [partialPayment, setPartialPayment] = useState('');
+  
+  // Estado para descuento ocasional
+  const [occasionalDiscount, setOccasionalDiscount] = useState('');
 
   useEffect(() => {
     loadData();
@@ -95,6 +107,36 @@ const Sales = () => {
         stock_disponible: product.stock
       }]);
     }
+
+    // Animación y sonido
+    setAnimatingProduct(product.id);
+    setTimeout(() => setAnimatingProduct(null), 600);
+
+    // Reproducir sonido de confirmación
+    playAddToCartSound();
+  };
+
+  const playAddToCartSound = () => {
+    try {
+      // Crear un sonido simple usando Web Audio API
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (error) {
+      console.log('Audio not supported');
+    }
   };
 
   const updateQuantity = (producto_id, newQuantity) => {
@@ -118,10 +160,16 @@ const Sales = () => {
   };
 
   const calculateTotal = () => {
+    const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+    const discount = parseFloat(occasionalDiscount) || 0;
+    return Math.max(0, subtotal - discount);
+  };
+  
+  const getSubtotal = () => {
     return cart.reduce((sum, item) => sum + item.subtotal, 0);
   };
 
-  const handleCompleteSale = async () => {
+  const handleCompleteSale = () => {
     if (cart.length === 0) {
       showNotification('warning', 'Carrito Vacío', 'Debe agregar al menos un producto');
       return;
@@ -132,6 +180,14 @@ const Sales = () => {
       return;
     }
 
+    const subtotal = getSubtotal();
+    const discount = parseFloat(occasionalDiscount) || 0;
+    
+    if (discount > subtotal) {
+      showNotification('warning', 'Descuento Inválido', 'El descuento no puede ser mayor al total de la compra');
+      return;
+    }
+    
     const totalAmount = calculateTotal();
 
     if (paymentType === 'credito') {
@@ -141,6 +197,13 @@ const Sales = () => {
         return;
       }
     }
+
+    // Mostrar modal de confirmación
+    setShowConfirmationModal(true);
+  };
+
+  const handleConfirmSale = async () => {
+    const totalAmount = calculateTotal();
 
     const now = new Date();
     const year = now.getFullYear();
@@ -155,15 +218,25 @@ const Sales = () => {
       cliente_id: parseInt(selectedClient),
       fecha: fechaVenta,
       productos: cart,
-      metodo_pago: paymentMethod
+      metodo_pago: paymentMethod,
+      descuento: parseFloat(occasionalDiscount) || 0
     };
 
 
     if (paymentType === 'credito') {
       const abono = parseFloat(partialPayment) || 0;
-      saleData.estado_pago = abono === 0 ? 'pendiente' : 'parcial';
+
+      // Determine payment status based on amount paid
+      if (abono === 0) {
+        saleData.estado_pago = 'pendiente';
+      } else if (abono >= totalAmount) {
+        saleData.estado_pago = 'pagado';
+      } else {
+        saleData.estado_pago = 'parcial';
+      }
+
       saleData.monto_pagado = abono;
-      saleData.monto_pendiente = totalAmount - abono;
+      saleData.monto_pendiente = Math.max(0, totalAmount - abono);
     } else {
       saleData.estado_pago = 'pagado';
       saleData.monto_pagado = totalAmount;
@@ -172,6 +245,7 @@ const Sales = () => {
 
     try {
       await createSale(saleData);
+      setShowConfirmationModal(false);
       setSuccessModal({ isOpen: true, amount: totalAmount, saleType: paymentType });
 
       setCart([]);
@@ -180,13 +254,22 @@ const Sales = () => {
       setPaymentType('contado');
       setPaymentMethod('efectivo');
       setPartialPayment('');
+      setOccasionalDiscount('');
 
       loadData();
     } catch (error) {
       console.error('Error registrando venta:', error);
+      setShowConfirmationModal(false);
       showNotification('error', 'Error', error.response?.data?.error || 'Error al registrar la venta');
     }
   };
+
+  // Filtrar productos basado en búsqueda
+  const filteredProducts = products.filter(product =>
+    product.nombre.toLowerCase().includes(productSearch.toLowerCase()) ||
+    product.tipo.toLowerCase().includes(productSearch.toLowerCase()) ||
+    product.presentacion.toLowerCase().includes(productSearch.toLowerCase())
+  );
 
   // Filtrar clientes basado en búsqueda
   const filteredClients = clients.filter(client =>
@@ -194,10 +277,23 @@ const Sales = () => {
   );
 
   // Manejar selección de cliente
-  const handleSelectClient = (client) => {
+  const handleSelectClient = async (client) => {
     setSelectedClient(client.id);
     setClientSearch(client.nombre);
     setShowClientSuggestions(false);
+
+    // Consultar deuda del cliente
+    try {
+      const response = await getClientDebt(client.id);
+      if (response.data && response.data.success) {
+        setClientDebt(response.data.data.totalDebt || 0);
+      } else {
+        setClientDebt(0);
+      }
+    } catch (error) {
+      console.error('Error al obtener deuda:', error);
+      setClientDebt(0);
+    }
   };
 
   // Manejar creación de nuevo cliente
@@ -245,43 +341,71 @@ const Sales = () => {
 
         {/* Panel de Productos */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-lg flex flex-col overflow-hidden">
-          <div className="p-3 md:p-4 border-b border-gray-200">
+          <div className="p-3 md:p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-3">
             <h2 className="text-lg md:text-xl font-bold text-gray-800">Productos Disponibles</h2>
+
+            {/* Buscador de Productos */}
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="text"
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                placeholder="Buscar producto..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all"
+              />
+              {productSearch && (
+                <button
+                  onClick={() => setProductSearch('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto p-2 md:p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-3">
-              {products.map(product => (
-                <div
-                  key={product.id}
-                  className="border rounded-lg p-3 hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-white"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm text-gray-800 truncate">{product.nombre}</h3>
-                      <p className="text-xs text-gray-500 truncate">{product.tipo} - {product.presentacion}</p>
+            {filteredProducts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-60">
+                <Search size={48} className="mb-2" />
+                <p>No se encontraron productos</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-3">
+                {filteredProducts.map(product => (
+                  <div
+                    key={product.id}
+                    className="border rounded-lg p-3 hover:shadow-md transition-shadow bg-gradient-to-br from-blue-50 to-white"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm text-gray-800 truncate">{product.nombre}</h3>
+                        <p className="text-xs text-gray-500 truncate">{product.tipo} - {product.presentacion}</p>
+                      </div>
+                      <button
+                        onClick={() => addToCart(product)}
+                        className={`ml-2 bg-blue-500 text-white p-1.5 rounded-lg hover:bg-blue-600 transition-all flex-shrink-0 ${animatingProduct === product.id ? 'animate-add-to-cart' : ''
+                          }`}
+                        disabled={product.stock < 1}
+                      >
+                        <Plus size={18} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => addToCart(product)}
-                      className="ml-2 bg-blue-500 text-white p-1.5 rounded-lg hover:bg-blue-600 transition-colors flex-shrink-0"
-                      disabled={product.stock < 1}
-                    >
-                      <Plus size={18} />
-                    </button>
+                    <div className="flex justify-between items-center">
+                      <span className="text-base font-bold text-green-600">
+                        ${product.precio_venta.toLocaleString()}
+                      </span>
+                      <span className={`text-xs px-2 py-1 rounded whitespace-nowrap ${product.stock > 10 ? 'bg-green-100 text-green-800' :
+                        product.stock > 0 ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                        Stock: {product.stock}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-base font-bold text-green-600">
-                      ${product.precio_venta.toLocaleString()}
-                    </span>
-                    <span className={`text-xs px-2 py-1 rounded whitespace-nowrap ${product.stock > 10 ? 'bg-green-100 text-green-800' :
-                      product.stock > 0 ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                      Stock: {product.stock}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -354,6 +478,21 @@ const Sales = () => {
                 </div>
               )}
             </div>
+
+            {/* Alerta de Deuda */}
+            {selectedClient && clientDebt > 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-3 animate-pulse">
+                <div className="bg-red-100 p-1.5 rounded-full">
+                  <DollarSign className="w-4 h-4 text-red-600" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-red-800">Cliente con Deuda Pendiente</h4>
+                  <p className="text-xs text-red-600 mt-0.5">
+                    Este cliente debe: <span className="font-bold text-lg">${clientDebt.toLocaleString()}</span>
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Tipo de Pago */}
             <div>
@@ -443,6 +582,30 @@ const Sales = () => {
               </div>
             )}
 
+            {/* Descuento Ocasional */}
+            <div className="bg-purple-50 p-2 md:p-3 rounded-lg border-2 border-purple-200">
+              <label className="block text-xs font-semibold text-purple-700 mb-1 flex items-center gap-1">
+                <DollarSign className="w-3 h-3" />
+                Descuento Ocasional (Opcional)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max={getSubtotal()}
+                value={occasionalDiscount}
+                onChange={(e) => setOccasionalDiscount(e.target.value)}
+                className="w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                placeholder="0"
+              />
+              {occasionalDiscount && parseFloat(occasionalDiscount) > 0 && (
+                <p className="text-xs text-purple-600 mt-1 font-medium">
+                  Se aplicará un descuento de ${parseFloat(occasionalDiscount).toLocaleString()}
+                </p>
+              )}
+            </div>
+
+
             {/* Items del Carrito */}
             <div className="border-t pt-2 md:pt-3">
               <label className="block text-xs font-semibold text-gray-700 mb-2">
@@ -517,12 +680,36 @@ const Sales = () => {
               </div>
             )}
 
-            <div className="flex justify-between items-center">
-              <span className="text-base md:text-lg font-bold">Total:</span>
-              <span className="text-xl md:text-2xl font-bold text-green-600">
-                ${calculateTotal().toLocaleString()}
-              </span>
-            </div>
+            {/* Desglose de totales */}
+            {occasionalDiscount && parseFloat(occasionalDiscount) > 0 ? (
+              <div className="space-y-1 bg-white p-2 rounded-lg border border-purple-200">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-semibold text-gray-800">
+                    ${getSubtotal().toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-purple-600 font-medium">Descuento:</span>
+                  <span className="font-semibold text-purple-600">
+                    -${parseFloat(occasionalDiscount).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pt-1 border-t border-purple-200">
+                  <span className="text-base md:text-lg font-bold">Total:</span>
+                  <span className="text-xl md:text-2xl font-bold text-green-600">
+                    ${calculateTotal().toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-between items-center">
+                <span className="text-base md:text-lg font-bold">Total:</span>
+                <span className="text-xl md:text-2xl font-bold text-green-600">
+                  ${calculateTotal().toLocaleString()}
+                </span>
+              </div>
+            )}
 
             <button
               onClick={handleCompleteSale}
@@ -572,6 +759,40 @@ const Sales = () => {
           setClientFormData({ nombre: '', telefono: '', correo: '', direccion: '' });
         }}
       />
+
+      {/* Modal de Confirmación de Venta */}
+      <SaleConfirmationModal
+        isOpen={showConfirmationModal}
+        cart={cart}
+        total={calculateTotal()}
+        paymentType={paymentType}
+        paymentMethod={paymentMethod}
+        partialPayment={partialPayment}
+        occasionalDiscount={occasionalDiscount}
+        clientDebt={clientDebt}
+        onConfirm={handleConfirmSale}
+        onCancel={() => setShowConfirmationModal(false)}
+      />
+
+      {/* Estilos para animaciones */}
+      <style jsx>{`
+        @keyframes add-to-cart {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+
+        .animate-add-to-cart {
+          animation: add-to-cart 0.4s ease-in-out;
+        }
+      `}</style>
     </div>
   );
 };

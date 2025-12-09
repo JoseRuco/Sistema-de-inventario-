@@ -7,6 +7,13 @@ export default defineConfig({
     host: '0.0.0.0', // ✅ Permite acceso desde red local
     port: 5173,
     strictPort: true,
+    allowedHosts: [
+      '.loca.lt',
+      '.ngrok.io',
+      '.ngrok-free.app',
+      'localhost',
+      '.trycloudflare.com'
+    ],
   },
   build: {
     // Asegurar que los archivos del public se copien correctamente

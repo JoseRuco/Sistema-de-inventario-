@@ -74,6 +74,20 @@ export const getPaymentHistory = (ventaId) => api.get(`/credits/payment-history/
 // Obtener resumen de cartera
 export const getPortfolioSummary = () => api.get('/credits/summary');
 
+// ========== ANALYTICS / ANÁLISIS DE NEGOCIO ==========
+
+// Obtener mejores clientes
+export const getTopCustomers = (params) => api.get('/analytics/top-customers', { params });
+
+// Obtener productos de baja rotación
+export const getLowRotationProducts = (params) => api.get('/analytics/low-rotation', { params });
+
+// Obtener predicción de ventas
+export const getSalesPrediction = () => api.get('/analytics/sales-prediction');
+
+// Obtener margen de ganancia por categoría
+export const getProfitMarginByCategory = (params) => api.get('/analytics/profit-margin', { params });
+
 // CONFIGURACIÓN
 export const getConfig = () => api.get('/config');
 export const updateConfig = (data) => api.post('/config', data);

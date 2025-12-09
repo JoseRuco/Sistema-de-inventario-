@@ -12,7 +12,8 @@ exports.createSale = (req, res) => {
       metodo_pago,
       estado_pago,
       monto_pagado,
-      monto_pendiente
+      monto_pendiente,
+      descuento
     } = req.body;
 
     // Validaciones
@@ -30,8 +31,20 @@ exports.createSale = (req, res) => {
       });
     }
 
-    // Calcular el total
-    const total = productos.reduce((sum, p) => sum + p.subtotal, 0);
+    // Calcular el total de productos
+    const totalProductos = productos.reduce((sum, p) => sum + p.subtotal, 0);
+    
+    // Aplicar descuento si existe
+    const descuentoAplicado = descuento && descuento > 0 ? parseFloat(descuento) : 0;
+    const total = totalProductos - descuentoAplicado;
+
+    // Validar que el descuento no sea mayor al total
+    if (descuentoAplicado > totalProductos) {
+      return res.status(400).json({
+        success: false,
+        error: 'El descuento no puede ser mayor al total de la compra'
+      });
+    }
 
     // Validar stock disponible
     for (const producto of productos) {
@@ -63,9 +76,10 @@ exports.createSale = (req, res) => {
         metodo_pago,
         estado_pago,
         monto_pagado,
-        monto_pendiente
+        monto_pendiente,
+        descuento
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = insertSale.run(
@@ -75,7 +89,8 @@ exports.createSale = (req, res) => {
       metodo_pago || 'efectivo',
       estado_pago || 'pagado',
       monto_pagado !== undefined ? monto_pagado : total,
-      monto_pendiente !== undefined ? monto_pendiente : 0
+      monto_pendiente !== undefined ? monto_pendiente : 0,
+      descuentoAplicado
     );
 
     const venta_id = result.lastInsertRowid;
@@ -113,10 +128,10 @@ exports.createSale = (req, res) => {
 
       // 🔔 VERIFICAR STOCK BAJO Y ENVIAR ALERTA
       try {
-        const currentStock = db.prepare('SELECT stock, nombre FROM productos WHERE id = ?').get(producto.producto_id);
+        const currentStock = db.prepare('SELECT stock, nombre, presentacion FROM productos WHERE id = ?').get(producto.producto_id);
         if (currentStock && currentStock.stock < 10) {
-          console.log(`⚠️ Stock bajo detectado para ${currentStock.nombre}: ${currentStock.stock}`);
-          notificationService.sendLowStockAlert(currentStock.nombre, currentStock.stock);
+          console.log(`⚠️ Stock bajo detectado para ${currentStock.nombre} (${currentStock.presentacion}): ${currentStock.stock}`);
+          notificationService.sendLowStockAlert(currentStock.nombre, currentStock.presentacion, currentStock.stock);
         }
       } catch (alertError) {
         console.error('Error verificando alerta de stock:', alertError);
@@ -172,6 +187,7 @@ exports.getSales = (req, res) => {
         v.estado_pago,
         v.monto_pagado,
         v.monto_pendiente,
+        v.descuento,
         c.id as cliente_id,
         c.nombre as cliente_nombre,
         c.telefono,
@@ -206,6 +222,7 @@ exports.getSale = (req, res) => {
         v.estado_pago,
         v.monto_pagado,
         v.monto_pendiente,
+        v.descuento,
         c.id as cliente_id,
         c.nombre as cliente_nombre,
         c.telefono,

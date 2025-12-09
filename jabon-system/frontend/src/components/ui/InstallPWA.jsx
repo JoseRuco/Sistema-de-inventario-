@@ -17,7 +17,7 @@ function InstallPWA() {
         const wasInstalled = localStorage.getItem('pwa-installed');
         if (wasInstalled) {
             setIsInstalled(true);
-            return;
+            // No retornamos aquí para permitir reinstalación si el navegador lo permite
         }
 
         // Capturar el evento beforeinstallprompt
