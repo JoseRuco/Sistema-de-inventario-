@@ -318,8 +318,11 @@ function Products() {
                     >
                       <option value="loza">Loza</option>
                       <option value="ropa">Ropa</option>
-                      <option value="carro">Carro</option>
-                      <option value="piso">Piso</option>
+                      <option value="suavisante">Suavisante</option>
+                      <option value="ambientador">Ambientador</option>
+                      <option value="limpido">Limpido</option>
+                      <option value="desengrasante">Desengrasante</option>
+                      <option value="cosmetico">Cosmetico</option>
                     </select>
                   </div>
 
@@ -335,6 +338,7 @@ function Products() {
                       <option value="galon">Galón</option>
                       <option value="medio galon">Medio Galón</option>
                       <option value="litro">Litro</option>
+                      <option value="poma">Poma</option>
                     </select>
                   </div>
 

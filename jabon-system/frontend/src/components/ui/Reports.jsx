@@ -250,7 +250,7 @@ const Reports = () => {
                   <p className="text-red-600 text-sm mb-1 font-medium">Ventas Sin Pagar</p>
                   <p className="text-3xl font-bold text-red-600">{unpaidSales}</p>
                   <p className="text-xs text-red-500 mt-1">
-                    {unpaidSales === 1 ? 'venta pendiente' : 'ventas pendientes'}
+                    {unpaidSales === 1 ? 'venta pendiente' : 'NO SUBEN A LA ESTADISTICA'}
                   </p>
                 </div>
                 <div className="p-3 bg-red-100 rounded-lg">
@@ -394,7 +394,14 @@ const Reports = () => {
                   {reportType === 'ventas' ? (
                     reportData.map((sale) => (
                       <tr key={sale.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{sale.id}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div className="flex items-center gap-2">
+                            #{sale.id}
+                            {(sale.estado_pago === 'pendiente' || sale.estado_pago === 'parcial') && (
+                              <AlertCircle size={16} className="text-red-500" title="Venta sin pagar" />
+                            )}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {new Date(sale.fecha).toLocaleDateString()}
                         </td>

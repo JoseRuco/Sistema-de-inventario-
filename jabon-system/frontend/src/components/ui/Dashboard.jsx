@@ -403,12 +403,12 @@ const Dashboard = () => {
                       <span className="text-sm font-medium text-gray-900">{product.nombre}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-xs font-medium">
+                      <span className="inline-block  text-gray-700 px-2 py-1  text-xs font-medium">
                         {product.tipo}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm text-gray-600">{product.presentacion}</span>
+                      <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-xs font-medium">{product.presentacion}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className="text-sm font-bold text-gray-900">
