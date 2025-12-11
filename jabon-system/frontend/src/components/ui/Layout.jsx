@@ -13,6 +13,7 @@ import {
   CreditCard,
   Settings,
   TrendingUp,
+  Truck
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 
@@ -22,9 +23,10 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "sales", label: "Nueva venta", icon: ShoppingCart },
+    { id: "orders", label: "Pedidos y Encargos", icon: Truck },
     { id: "products", label: "Productos", icon: Package },
     { id: "clients", label: "Clientes", icon: Users },
-    { id: "sales", label: "Nueva venta", icon: ShoppingCart },
     { id: 'credits', label: 'Cuentas por Cobrar', icon: CreditCard },
     { id: "history", label: "Historial de ventas", icon: History },
     { id: "stockHistory", label: "Historial de Stock", icon: PackageCheck },
@@ -47,7 +49,7 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
           </div>
         </div>
 
-        <nav className="flex-1 p-3 space-y-0.9">
+        <nav className="flex-1 p-1 space-y-0">
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -98,7 +100,7 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
                 <X size={24} />
               </button>
             </div>
-            <nav className="p-4 space-y-2">
+            <nav className="p-1 space-y-0">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 return (

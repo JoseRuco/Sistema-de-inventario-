@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, ShoppingBag, DollarSign, Calendar, Package, AlertCircle } from 'lucide-react';
 import { getClientHistory } from '../../services/api';
+import Portal from './Portal';
 
 const ClientHistory = ({ isOpen, clientId, clientName, onClose }) => {
   const [client, setClient] = useState(null);
@@ -51,8 +52,9 @@ const calculateTotal = () => {
   const pendingSales = getPendingSales();
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <Portal>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6">
@@ -71,7 +73,7 @@ const calculateTotal = () => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 bg-white">
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
@@ -327,7 +329,7 @@ const calculateTotal = () => {
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 flex justify-between items-center border-t border-gray-200">
+        <div className="bg-gray-50 px-6 py-4 flex justify-between items-center border-t border-gray-200 rounded-b-2xl">
           <p className="text-sm text-gray-600">
             {sales.length > 0 && `${sales.length} compra${sales.length !== 1 ? 's' : ''} registrada${sales.length !== 1 ? 's' : ''}`}
           </p>
@@ -340,6 +342,7 @@ const calculateTotal = () => {
         </div>
       </div>
     </div>
+    </Portal>
   );
 };
 

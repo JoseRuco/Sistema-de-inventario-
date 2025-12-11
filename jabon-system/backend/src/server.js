@@ -10,6 +10,7 @@ const stockRoutes = require('./routes/stockRoutes');
 const creditRoutes = require('./routes/creditRoutes');
 const configRoutes = require('./routes/configRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
 const PORT = 5000;
@@ -32,6 +33,7 @@ app.use('/api/stock', stockRoutes);
 app.use('/api/credits', creditRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Package, Users, DollarSign, TrendingUp, AlertTriangle, RefreshCw, ShoppingCart, Calendar, Eye, Award } from 'lucide-react';
+import { Package, Users, DollarSign, TrendingUp, AlertTriangle, RefreshCw, ShoppingCart, Calendar, Eye, Award, Truck } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getDashboardStats, getChartData, getSalesByTypeMonth } from '../../services/api';
+import { getDashboardStats, getChartData, getSalesByTypeMonth, getPendingOrdersCount } from '../../services/api';
 
 
 
@@ -11,6 +11,7 @@ const Dashboard = () => {
   const [charts, setCharts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pendingOrders, setPendingOrders] = useState(0);
 
   useEffect(() => {
     loadData();
@@ -28,6 +29,9 @@ const Dashboard = () => {
 
       setStats(statsRes.data);
       setCharts(chartsRes.data);
+      
+      const ordersRes = await getPendingOrdersCount();
+      setPendingOrders(ordersRes.data.count || 0);
     } catch (error) {
       console.error('❌ Error:', error);
       setError(error.message || 'Error al cargar los datos');
@@ -168,6 +172,24 @@ const Dashboard = () => {
             <div className="flex items-center gap-1 text-xs text-purple-600">
               <ShoppingCart size={12} />
               <span>{stats?.salesMonth?.count || 0} ventas este mes</span>
+            </div>
+          </div>
+
+          {/* Pedidos Pendientes */}
+          <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 p-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-full -mr-10 -mt-10"></div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <span className="text-sm text-gray-500 font-medium">Pedidos Pendientes</span>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{pendingOrders}</p>
+              </div>
+              <div className="bg-blue-100 rounded-xl p-3 shadow-sm">
+                <Truck className="text-blue-600" size={24} />
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-blue-600">
+              <Truck size={12} />
+              <span>{pendingOrders === 0 ? 'Sin pedidos pendientes' : 'Por entregar'}</span>
             </div>
           </div>
         </div>

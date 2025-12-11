@@ -88,6 +88,14 @@ export const getSalesPrediction = () => api.get('/analytics/sales-prediction');
 // Obtener margen de ganancia por categoría
 export const getProfitMarginByCategory = (params) => api.get('/analytics/profit-margin', { params });
 
+// ========== PEDIDOS / ENCARGOS ==========
+export const getOrders = (params) => api.get('/orders', { params });
+export const createOrder = (data) => api.post('/orders', data);
+export const updateOrderStatus = (id, status) => api.put(`/orders/${id}/status`, { estado: status });
+export const deleteOrder = (id) => api.delete(`/orders/${id}`);
+// Dashboard stats for pending orders
+export const getPendingOrdersCount = () => api.get('/orders/pending-count');
+
 // CONFIGURACIÓN
 export const getConfig = () => api.get('/config');
 export const updateConfig = (data) => api.post('/config', data);

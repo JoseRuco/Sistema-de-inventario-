@@ -29,13 +29,16 @@ if ('serviceWorker' in navigator) {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // Hay una nueva versión disponible
-              console.log('[PWA] Nueva versión disponible. Recarga la página para actualizar.');
-
-              // Opcional: Mostrar notificación al usuario
-              if (confirm('Hay una nueva versión disponible. ¿Deseas actualizar?')) {
-                newWorker.postMessage({ type: 'SKIP_WAITING' });
-                window.location.reload();
-              }
+              console.log('[PWA] Nueva versión disponible. Actualizando...');
+              
+              // Opcional: Podríamos mostrar un toast no bloqueante aquí
+              // Por ahora, forzamos la actualización silenciosamente si es crítico,
+              // o simplemente dejamos que el usuario recargue cuando quiera.
+              // Para evitar el loop infinito de recargas, NO recargamos automáticamente
+              // a menos que podamos garantizar que no es un ciclo.
+              
+              // Un enfoque seguro es solo notificar:
+              // newWorker.postMessage({ type: 'SKIP_WAITING' }); 
             }
           });
         });
@@ -44,7 +47,7 @@ if ('serviceWorker' in navigator) {
         console.error('[PWA] Error al registrar Service Worker:', error);
       });
 
-    // Recargar cuando el Service Worker tome control
+    // Recargar cuando el Service Worker tome control (post-SKIP_WAITING)
     let refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!refreshing) {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X, Calendar, User, Phone, MapPin, Package, CreditCard, DollarSign } from 'lucide-react';
+import { X, Calendar, User, Phone, MapPin, Package, CreditCard, DollarSign, FileText } from 'lucide-react';
 import { getSale } from '../../services/api';
+import Portal from './Portal';
 
 const SaleDetailsModal = ({ isOpen, ventaId, onClose }) => {
   const [sale, setSale] = useState(null);
@@ -54,10 +55,11 @@ const SaleDetailsModal = ({ isOpen, ventaId, onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <Portal>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
+        <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
 
-        {/* Header */}
+          {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold">Detalles de Venta #{sale.id}</h2>
@@ -80,7 +82,7 @@ const SaleDetailsModal = ({ isOpen, ventaId, onClose }) => {
         </div>
 
         {/* Content Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 bg-white">
 
           {/* Información del Cliente */}
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
@@ -160,6 +162,17 @@ const SaleDetailsModal = ({ isOpen, ventaId, onClose }) => {
               </div>
             )}
           </div>
+
+          {/* Notas de la Venta */}
+          {sale.notas && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <h3 className="font-bold text-yellow-800 mb-2 flex items-center gap-2">
+                <FileText size={18} className="text-yellow-600" />
+                Nota de Venta
+              </h3>
+              <p className="text-gray-700 text-sm whitespace-pre-wrap">{sale.notas}</p>
+            </div>
+          )}
 
           {/* Resumen de Pago */}
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-100">
@@ -248,7 +261,7 @@ const SaleDetailsModal = ({ isOpen, ventaId, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-200">
+        <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-200 rounded-b-2xl">
           <button
             onClick={onClose}
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
@@ -259,6 +272,7 @@ const SaleDetailsModal = ({ isOpen, ventaId, onClose }) => {
 
       </div>
     </div>
+    </Portal>
   );
 };
 

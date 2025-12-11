@@ -41,6 +41,9 @@ const Sales = () => {
   
   // Estado para descuento ocasional
   const [occasionalDiscount, setOccasionalDiscount] = useState('');
+  
+  // Estado para nota de venta
+  const [saleNote, setSaleNote] = useState('');
 
   useEffect(() => {
     loadData();
@@ -219,7 +222,8 @@ const Sales = () => {
       fecha: fechaVenta,
       productos: cart,
       metodo_pago: paymentMethod,
-      descuento: parseFloat(occasionalDiscount) || 0
+      descuento: parseFloat(occasionalDiscount) || 0,
+      notas: saleNote
     };
 
 
@@ -255,6 +259,7 @@ const Sales = () => {
       setPaymentMethod('efectivo');
       setPartialPayment('');
       setOccasionalDiscount('');
+      setSaleNote('');
 
       loadData();
     } catch (error) {
@@ -603,6 +608,20 @@ const Sales = () => {
                   Se aplicará un descuento de ${parseFloat(occasionalDiscount).toLocaleString()}
                 </p>
               )}
+            </div>
+            
+            {/* Nota de Venta */}
+            <div className="bg-gray-50 p-2 md:p-3 rounded-lg border border-gray-200">
+               <label className="block text-xs font-semibold text-gray-700 mb-1">
+                 Nota (Opcional)
+               </label>
+               <textarea
+                 value={saleNote}
+                 onChange={(e) => setSaleNote(e.target.value)}
+                 className="w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                 placeholder="Escribe alguna nota o detalle importante sobre la venta..."
+                 rows="2"
+               />
             </div>
 
 

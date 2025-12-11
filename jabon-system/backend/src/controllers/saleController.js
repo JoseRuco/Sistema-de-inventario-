@@ -13,7 +13,8 @@ exports.createSale = (req, res) => {
       estado_pago,
       monto_pagado,
       monto_pendiente,
-      descuento
+      descuento,
+      notas
     } = req.body;
 
     // Validaciones
@@ -77,9 +78,10 @@ exports.createSale = (req, res) => {
         estado_pago,
         monto_pagado,
         monto_pendiente,
-        descuento
+        descuento,
+        notas
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = insertSale.run(
@@ -90,7 +92,8 @@ exports.createSale = (req, res) => {
       estado_pago || 'pagado',
       monto_pagado !== undefined ? monto_pagado : total,
       monto_pendiente !== undefined ? monto_pendiente : 0,
-      descuentoAplicado
+      descuentoAplicado,
+      notas || ''
     );
 
     const venta_id = result.lastInsertRowid;
@@ -188,6 +191,7 @@ exports.getSales = (req, res) => {
         v.monto_pagado,
         v.monto_pendiente,
         v.descuento,
+        v.notas,
         c.id as cliente_id,
         c.nombre as cliente_nombre,
         c.telefono,
@@ -223,6 +227,7 @@ exports.getSale = (req, res) => {
         v.monto_pagado,
         v.monto_pendiente,
         v.descuento,
+        v.notas,
         c.id as cliente_id,
         c.nombre as cliente_nombre,
         c.telefono,

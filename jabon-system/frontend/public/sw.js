@@ -1,12 +1,11 @@
 // Service Worker para Sistema de Inventario PWA
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_VERSION = 'v1.0.3';
 const CACHE_NAME = `inventario-cache-${CACHE_VERSION}`;
 const API_CACHE = `inventario-api-${CACHE_VERSION}`;
 
-// Recursos críticos para pre-cachear
+// Recursos críticos para pre-cachear (excluimos index.html para evitar que se quede pegado)
 const PRECACHE_URLS = [
     '/',
-    '/index.html',
     '/offline.html',
     '/PNGLOGO.png',
     '/icons/icon-192.png',
@@ -97,8 +96,8 @@ async function cacheFirstStrategy(request, cacheName) {
         console.log('[SW] Cache miss, fetching:', request.url);
         const networkResponse = await fetch(request);
 
-        // Cachear la respuesta si es exitosa
-        if (networkResponse && networkResponse.status === 200) {
+        // Cachear la respuesta si es exitosa y es GET
+        if (request.method === 'GET' && networkResponse && networkResponse.status === 200) {
             const cache = await caches.open(cacheName);
             cache.put(request, networkResponse.clone());
         }
@@ -121,10 +120,14 @@ async function cacheFirstStrategy(request, cacheName) {
 async function networkFirstStrategy(request, cacheName) {
     try {
         console.log('[SW] Network first:', request.url);
-        const networkResponse = await fetch(request);
+        
+        // Para navegación (HTML), intentamos evitar la caché del navegador
+        // usando { cache: 'reload' } si es posible, o simplemente fetch
+        const fetchOptions = request.mode === 'navigate' ? { cache: 'reload' } : undefined;
+        const networkResponse = await fetch(request.url, fetchOptions).catch(() => fetch(request));
 
-        // Cachear respuestas exitosas
-        if (networkResponse && networkResponse.status === 200) {
+        // Cachear respuestas exitosas SOLO si es GET
+        if (request.method === 'GET' && networkResponse && networkResponse.status === 200) {
             const cache = await caches.open(cacheName);
             cache.put(request, networkResponse.clone());
         }

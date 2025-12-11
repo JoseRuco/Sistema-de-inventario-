@@ -1,8 +1,15 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
+
+    <!-- Evitar cache del index.html para forzar actualización de versiones -->
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
@@ -14,21 +21,40 @@
 
     <!-- Theme Color -->
     <meta name="theme-color" content="#3b82f6" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#3b82f6" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1e40af" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#3b82f6"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#1e40af"
+    />
 
     <!-- Mobile Web App - Force Standalone -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
 
     <!-- Viewport -->
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover"
+    />
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Sistema de gestión de inventario, ventas y clientes - PWA" />
-    <meta name="keywords" content="inventario, ventas, clientes, gestión, pwa" />
+    <meta
+      name="description"
+      content="Sistema de gestión de inventario, ventas y clientes - PWA"
+    />
+    <meta
+      name="keywords"
+      content="inventario, ventas, clientes, gestión, pwa"
+    />
 
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -41,11 +67,10 @@
     <meta name="msapplication-TileImage" content="/icons/icon-512.png" />
 
     <title>Sistema de Inventario</title>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-</body>
-
+  </body>
 </html>

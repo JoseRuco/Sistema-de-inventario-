@@ -4,6 +4,7 @@ import { getProducts, createProduct, updateProduct, deleteProduct } from '../../
 import InfoModal from './InfoModal';
 import ConfirmDialog from './ConfirmDialog';
 import ProductInfoModal from './ProductInfoModal';
+import Portal from './Portal';
 
 function Products() {
   const [products, setProducts] = useState([]);
@@ -283,6 +284,7 @@ function Products() {
 
       {/* Form Modal */}
       {showForm && (
+        <Portal>
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
@@ -401,6 +403,7 @@ function Products() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* Products Table */}
@@ -530,9 +533,10 @@ function Products() {
 
       {/* Modal de Ajuste de Stock */}
       {stockModal.isOpen && (
+        <Portal>
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-scale-in">
-            <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white rounded-t-2xl">
+            <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white">
               <div className="flex items-center gap-3">
                 <div className="bg-white bg-opacity-20 p-3 rounded-full">
                   <Package size={28} />
@@ -544,7 +548,7 @@ function Products() {
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-6 bg-white">
               {/* Información del Producto */}
               <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h3 className="font-semibold text-gray-900 mb-2">{stockModal.product?.nombre}</h3>
@@ -603,7 +607,7 @@ function Products() {
             </div>
 
             {/* Botones */}
-            <div className="bg-gray-50 px-6 py-4 rounded-b-2xl flex gap-3">
+            <div className="bg-gray-50 px-6 py-4 flex gap-3 rounded-b-2xl">
               <button
                 onClick={() => setStockModal({ isOpen: false, product: null, quantity: '' })}
                 className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
@@ -620,6 +624,7 @@ function Products() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
     </div>
   );

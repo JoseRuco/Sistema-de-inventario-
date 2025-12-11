@@ -113,6 +113,31 @@ const initDB = () => {
     )
   `);
 
+  // Tabla de pedidos (Sistema de encargos)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS pedidos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      cliente_id INTEGER NOT NULL,
+      fecha_entrega DATETIME,
+      estado TEXT DEFAULT 'pendiente', -- pendiente, en_camino, entregado, cancelado
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+    )
+  `);
+
+  // Tabla de detalles de pedidos
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS pedidos_detalles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      pedido_id INTEGER NOT NULL,
+      producto_id INTEGER NOT NULL,
+      cantidad INTEGER NOT NULL,
+      FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE,
+      FOREIGN KEY (producto_id) REFERENCES productos(id)
+    )
+  `);
+
+
   // Tabla de configuración
   db.exec(`
     CREATE TABLE IF NOT EXISTS configuracion (
@@ -143,8 +168,15 @@ const initDB = () => {
       db.exec('ALTER TABLE ventas ADD COLUMN descuento REAL DEFAULT 0');
       console.log('✅ Columna descuento añadida a la tabla ventas');
     }
+
+    // Añadir columna notas si no existe
+    const hasNotas = tableInfo.some(col => col.name === 'notas');
+    if (!hasNotas) {
+      db.exec('ALTER TABLE ventas ADD COLUMN notas TEXT');
+      console.log('✅ Columna notas añadida a la tabla ventas');
+    }
   } catch (error) {
-    console.error('Error verificando/añadiendo columna descuento:', error);
+    console.error('Error verificando/añadiendo columnas:', error);
   }
 
   console.log('✅ Base de datos inicializada correctamente');

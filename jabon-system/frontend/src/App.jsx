@@ -10,6 +10,7 @@ import StockHistory from './components/ui/StockHistory';
 import Login from './components/ui/Login';
 import Credits from './components/ui/Credits';
 import Configuracion from './components/ui/Configuracion';
+import Orders from './components/ui/Orders';
 import Analytics from './components/ui/Analytics';
 
 function App() {
@@ -80,6 +81,7 @@ function App() {
       {currentView === 'credits' && <Credits />}
       {currentView === 'analytics' && <Analytics />}
       {currentView === 'reports' && <Reports />}
+      {currentView === 'orders' && <Orders />}
       {currentView === 'config' && <Configuracion />}
     </Layout>
   );
