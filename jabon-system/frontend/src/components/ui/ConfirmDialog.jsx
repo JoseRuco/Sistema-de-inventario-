@@ -20,62 +20,66 @@ const ConfirmDialog = ({
     ? 'from-red-500 to-red-600'
     : isWarning
       ? 'from-yellow-500 to-amber-600'
-      : 'from-blue-500 to-indigo-600';
+      : 'from-red-500 to-red-500';
 
   const iconBg = isDanger
     ? 'bg-red-100 text-red-600'
     : isWarning
       ? 'bg-yellow-100 text-yellow-600'
-      : 'bg-blue-100 text-blue-600';
+      : 'bg-red-100 text-red-600';
 
   const Icon = isDanger || isWarning ? AlertTriangle : CheckCircle;
 
   return (
     <Portal>
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center" style={{ zIndex: 9999 }}>
-        <div className="bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
-
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] p-4 animate-fade-in">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in-bounce relative">
+          
           {/* Header */}
-          <div className={`bg-gradient-to-r ${headerColors} text-white p-5 flex items-center justify-between`}>
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${iconBg}`}>
-                <Icon className="w-6 h-6" />
+          <div className={`bg-gradient-to-r ${headerColors} text-white p-6 flex items-center justify-between`}>
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-white bg-opacity-20 shadow-inner`}>
+                <Icon className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold">{title}</h3>
+              <h3 className="text-xl font-bold">{title}</h3>
             </div>
             <button
               onClick={onCancel}
-              className="p-1.5 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors"
+              className="p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6" />
             </button>
           </div>
 
           {/* Mensaje */}
-          <div className="p-5">
-            <p className="text-sm text-gray-700 whitespace-pre-line">
+          <div className="p-8 text-center">
+             <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${iconBg}`}>
+                <Icon className="w-8 h-8" />
+             </div>
+            <p className="text-gray-600 text-lg leading-relaxed whitespace-pre-line">
               {message}
             </p>
           </div>
 
           {/* Botones */}
-          <div className="bg-gray-50 px-5 py-4 flex justify-end gap-3">
+          <div className="bg-gray-50 px-6 py-5 flex gap-4 rounded-b-2xl">
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors font-medium text-base shadow-sm"
             >
               {cancelText}
             </button>
             <button
               type="button"
               onClick={onConfirm}
-              className={`px-4 py-2 rounded-lg text-white text-sm font-medium shadow-sm hover:shadow-md transition-all ${isDanger
-                  ? 'bg-red-500 hover:bg-red-600'
+              className={`flex-1 px-4 py-3 rounded-xl text-white font-medium text-base shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 ${
+                isDanger
+                  ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
                   : isWarning
-                    ? 'bg-yellow-500 hover:bg-yellow-600'
-                    : 'bg-blue-500 hover:bg-blue-600'
-                }`}
+                    ? 'bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700'
+                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-red-600 hover:to-red-700'
+              }`}
             >
               {confirmText}
             </button>

@@ -1,11 +1,10 @@
 // Service Worker para Sistema de Inventario PWA
-const CACHE_VERSION = 'v1.0.3';
+const CACHE_VERSION = 'v1.0.6';
 const CACHE_NAME = `inventario-cache-${CACHE_VERSION}`;
 const API_CACHE = `inventario-api-${CACHE_VERSION}`;
 
 // Recursos críticos para pre-cachear (excluimos index.html para evitar que se quede pegado)
 const PRECACHE_URLS = [
-    '/',
     '/offline.html',
     '/PNGLOGO.png',
     '/icons/icon-192.png',
@@ -61,9 +60,9 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Estrategia para llamadas API
+    // IMPORTANTE: NO interceptar llamadas a la API. Dejar que el navegador las maneje directamente.
+    // Esto soluciona el problema de "falsos positivos" o respuestas cacheadas en PC.
     if (url.pathname.startsWith('/api/')) {
-        event.respondWith(networkFirstStrategy(request, API_CACHE));
         return;
     }
 
@@ -121,9 +120,9 @@ async function networkFirstStrategy(request, cacheName) {
     try {
         console.log('[SW] Network first:', request.url);
         
-        // Para navegación (HTML), intentamos evitar la caché del navegador
-        // usando { cache: 'reload' } si es posible, o simplemente fetch
-        const fetchOptions = request.mode === 'navigate' ? { cache: 'reload' } : undefined;
+        // Para navegación (HTML) y API, evitamos la caché del navegador
+        // usando { cache: 'no-store' } para asegurar frescura total
+        const fetchOptions = { cache: 'no-store' };
         const networkResponse = await fetch(request.url, fetchOptions).catch(() => fetch(request));
 
         // Cachear respuestas exitosas SOLO si es GET
