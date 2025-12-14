@@ -99,6 +99,20 @@ const getDashboardStats = (req, res) => {
       LIMIT 5
     `).all();
 
+    // ✅ VENTAS PENDIENTES DEL MES
+    const pendingSalesCount = db.prepare(`
+      SELECT COUNT(*) as count
+      FROM ventas
+      WHERE strftime('%Y-%m', fecha) = ? AND estado_pago = 'pendiente'
+    `).get(mesActual).count;
+
+    // ✅ VENTAS PARCIALES DEL MES
+    const partialSalesCount = db.prepare(`
+      SELECT COUNT(*) as count
+      FROM ventas
+      WHERE strftime('%Y-%m', fecha) = ? AND estado_pago = 'parcial'
+    `).get(mesActual).count;
+
     console.log('✅ Stats calculados correctamente');
     console.log('📊 Ventas hoy:', salesToday);
     console.log('📊 Ventas mes:', salesMonth);
@@ -112,7 +126,9 @@ const getDashboardStats = (req, res) => {
       },
       salesMonth: {
         count: salesMonth.count,
-        total: salesMonth.total
+        total: salesMonth.total,
+        pendingCount: pendingSalesCount, // Nuevo
+        partialCount: partialSalesCount  // Nuevo
       },
       lowStock,
       recentSales

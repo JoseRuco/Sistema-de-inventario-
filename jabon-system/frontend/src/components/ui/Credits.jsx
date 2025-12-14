@@ -85,7 +85,7 @@ const Credits = () => {
       parcial: {
         bg: 'bg-yellow-100',
         text: 'text-yellow-700',
-        label: 'Pago Parcial'
+        label: 'Parcial'
       }
     };
 

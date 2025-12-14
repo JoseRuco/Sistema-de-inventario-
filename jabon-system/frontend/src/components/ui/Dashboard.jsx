@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Package, Users, DollarSign, TrendingUp, AlertTriangle, RefreshCw, ShoppingCart, Calendar, Eye, Award, Truck } from 'lucide-react';
+import { Package, Users, DollarSign, TrendingUp, AlertTriangle, RefreshCw, ShoppingCart, Calendar, Eye, Award, Truck, Clock, Percent } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { getDashboardStats, getChartData, getSalesByTypeMonth, getPendingOrdersCount } from '../../services/api';
 
@@ -102,10 +102,10 @@ const Dashboard = () => {
 
 
         {/* Stats Cards Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {/* Total Productos */}
           <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-full -mr-10 -mt-10"></div>
+            <div className="absolute top-0 right-0 w-0 h-0 bg-blue-50 rounded-full -mr-10 -mt-10"></div>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <span className="text-sm text-gray-500 font-medium">Total Productos</span>
@@ -123,7 +123,7 @@ const Dashboard = () => {
 
           {/* Total Clientes */}
           <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-green-50 rounded-full -mr-10 -mt-10"></div>
+            <div className="absolute top-0 right-0 w-0 h-0 bg-green-50 rounded-full -mr-10 -mt-10"></div>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <span className="text-sm text-gray-500 font-medium">Total Clientes</span>
@@ -141,7 +141,7 @@ const Dashboard = () => {
 
           {/* Ventas Hoy */}
           <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-50 rounded-full -mr-10 -mt-10"></div>
+            <div className="absolute top-0 right-0 w-0 h-0 bg-yellow-50 rounded-full -mr-10 -mt-10"></div>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <span className="text-sm text-gray-500 font-medium">Ventas Hoy</span>
@@ -159,7 +159,7 @@ const Dashboard = () => {
 
           {/* Ventas del Mes */}
           <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-purple-50 rounded-full -mr-10 -mt-10"></div>
+            <div className="absolute top-0 right-0 w-0 h-0 bg-purple-50 rounded-full -mr-10 -mt-10"></div>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <span className="text-sm text-gray-500 font-medium">Ventas del Mes</span>
@@ -175,9 +175,45 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {/* Ventas Pendientes (Mes Actual) */}
+          <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 p-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-0 h-0 bg-orange-50 rounded-full -mr-10 -mt-10"></div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <span className="text-sm text-gray-500 font-medium">Ventas Pendientes (Mes)</span>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.salesMonth?.pendingCount || 0}</p>
+              </div>
+              <div className="bg-orange-100 rounded-xl p-3 shadow-sm">
+                <Clock className="text-orange-600" size={24} />
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-orange-600">
+              <Clock size={12} />
+              <span>Por cobrar este mes</span>
+            </div>
+          </div>
+
+          {/* Ventas Parciales (Mes Actual) */}
+          <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 p-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-0 h-0 bg-indigo-50 rounded-full -mr-10 -mt-10"></div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <span className="text-sm text-gray-500 font-medium">Ventas Parciales (Mes)</span>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.salesMonth?.partialCount || 0}</p>
+              </div>
+              <div className="bg-indigo-100 rounded-xl p-3 shadow-sm">
+                <Percent className="text-indigo-600" size={24} />
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-indigo-600">
+              <Percent size={12} />
+              <span>Pagos incompletos este mes</span>
+            </div>
+          </div>
+
           {/* Pedidos Pendientes */}
           <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100 p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-full -mr-10 -mt-10"></div>
+            <div className="absolute top-0 right-0 w-0 h-0 bg-blue-50 rounded-full -mr-10 -mt-10"></div>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <span className="text-sm text-gray-500 font-medium">Pedidos Pendientes</span>

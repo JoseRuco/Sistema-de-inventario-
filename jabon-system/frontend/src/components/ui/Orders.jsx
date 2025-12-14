@@ -230,7 +230,15 @@ const Orders = () => {
                 <div className="p-4 flex-1">
                   <div className="flex items-center gap-2 mb-3 text-sm text-gray-600 bg-blue-50 p-2 rounded-lg">
                     <Clock size={16} className="text-blue-500" />
-                    Entrega: <strong>{new Date(order.fecha_entrega).toLocaleDateString()}</strong>
+                    Entrega: <strong>{(() => {
+                      if (!order.fecha_entrega) return 'Sin fecha';
+                      const [year, month, day] = order.fecha_entrega.split('-');
+                      return new Date(year, month - 1, day).toLocaleDateString('es-ES', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric' 
+                      });
+                    })()}</strong>
                   </div>
 
                   <div className="space-y-2">

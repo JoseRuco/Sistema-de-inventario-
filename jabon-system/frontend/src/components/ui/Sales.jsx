@@ -385,7 +385,8 @@ const Sales = () => {
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-sm text-gray-800 truncate">{product.nombre}</h3>
-                        <p className="text-xs text-gray-500 truncate">{product.tipo} - {product.presentacion}</p>
+                        <p className="text-xs text-gray-500 truncate">{product.tipo}</p>
+                        <p className="inline-block bg-blue-200 text-black px-2 py-1 my-2 rounded-md text-xs">{product.presentacion}</p>
                       </div>
                       <button
                         onClick={() => addToCart(product)}
@@ -530,10 +531,10 @@ const Sales = () => {
                     }`}
                 >
                   <CreditCard className="w-4 h-4" />
-                  <span className="hidden sm:inline">Fiado</span>
-                  <span className="sm:hidden">Fiado</span>
+                  <span className="hidden sm:inline">Deuda</span>
+                  <span className="sm:hidden">Deuda</span>
                 </button>
-              </div>
+              </div>                  
             </div>
 
             {/* Método de Pago */}
