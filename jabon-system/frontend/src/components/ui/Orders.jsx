@@ -21,6 +21,7 @@ const Orders = () => {
   const [cart, setCart] = useState([]);
   const [productSearch, setProductSearch] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('');
+  const [orderNote, setOrderNote] = useState(''); // Estado para la nota
   
   // Client creation
   const [showClientModal, setShowClientModal] = useState(false);
@@ -105,7 +106,9 @@ const Orders = () => {
     try {
       const payload = {
         cliente_id: selectedClient,
+
         fecha_entrega: deliveryDate,
+        nota: orderNote, // Enviar nota
         productos: cart
       };
 
@@ -117,7 +120,9 @@ const Orders = () => {
       setCart([]);
       setSelectedClient('');
       setClientSearch('');
+
       setDeliveryDate('');
+      setOrderNote(''); // Reset nota
       
       loadData(); // Refresh list
     } catch (error) {
@@ -241,6 +246,14 @@ const Orders = () => {
                     })()}</strong>
                   </div>
 
+                  {/* Mostrar nota si existe */}
+                  {order.notas && (
+                    <div className="mb-3 bg-yellow-50 p-2 rounded-lg border border-yellow-100 text-sm text-yellow-800 flex items-start gap-2">
+                       <span className="shrink-0 mt-0.5" title="Nota del pedido">📝</span>
+                       <p className="italic">{order.notas}</p>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Productos:</p>
                     {order.productos.map((prod, idx) => (
@@ -250,7 +263,9 @@ const Orders = () => {
                            <span className="font-bold bg-gray-100 px-2 py-0.5 rounded text-gray-700">x{prod.cantidad}</span>
                            {prod.stock_actual < prod.cantidad && (
                              <AlertCircle size={20} className="text-red-500" title="Stock insuficiente" />
+                             
                            )}
+
                         </div>
                       </div>
                     ))}
@@ -379,6 +394,17 @@ const Orders = () => {
                       value={deliveryDate}
                       onChange={(e) => setDeliveryDate(e.target.value)}
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Note Input */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Nota (Opcional)</label>
+                    <textarea 
+                      value={orderNote}
+                      onChange={(e) => setOrderNote(e.target.value)}
+                      placeholder="Ej: Entregar por la tarde..."
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none h-20"
                     />
                   </div>
 

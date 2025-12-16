@@ -97,7 +97,8 @@ const SalesHistory = () => {
         clientId: filterClient,
         paymentMethod: filterPaymentMethod,
         startDate: startDate,
-        endDate: endDate
+        endDate: endDate,
+        includeSummary: !isLoadMore // Solo pedir resumen en la primera carga o filtro nuevo
       };
 
       const response = await getSales(params);
@@ -110,8 +111,17 @@ const SalesHistory = () => {
         setSales(data);
       }
 
-      setSummary(serverSummary);
-      setHasMore(data.length === 50 && (isLoadMore ? sales.length + data.length : data.length) < pagination.totalRecords);
+      if (!isLoadMore) {
+        setSummary(serverSummary);
+      } else {
+         // Update total records just in case it changed (since we fetch it in "else" block of controller)
+         setSummary(prev => ({
+             ...prev,
+             totalRecords: serverSummary.totalRecords || prev.totalRecords
+         }));
+      }
+
+      setHasMore(data.length === 50 && (isLoadMore ? sales.length + data.length : data.length) < (serverSummary.totalRecords || summary.totalRecords));
 
     } catch (error) {
       console.error('Error cargando ventas:', error);

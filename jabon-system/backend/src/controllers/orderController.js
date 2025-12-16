@@ -16,13 +16,14 @@ exports.createOrder = (req, res) => {
     // Iniciar transacción explícita si fuera necesario, pero better-sqlite3 es síncrono.
     // Insertar pedido
     const insertOrder = db.prepare(`
-      INSERT INTO pedidos (cliente_id, fecha_entrega, estado, created_at)
-      VALUES (?, ?, 'pendiente', ?)
+      INSERT INTO pedidos (cliente_id, fecha_entrega, notas, estado, created_at)
+      VALUES (?, ?, ?, 'pendiente', ?)
     `);
 
     const result = insertOrder.run(
       cliente_id,
       fecha_entrega,
+      req.body.nota || '', // Capturar nota
       getColombiaDateTime()
     );
 
@@ -68,7 +69,8 @@ exports.getOrders = (req, res) => {
     const orders = db.prepare(`
       SELECT 
         p.id, 
-        p.fecha_entrega, 
+        p.fecha_entrega,
+        p.notas, 
         p.estado, 
         p.created_at,
         c.nombre as cliente_nombre,

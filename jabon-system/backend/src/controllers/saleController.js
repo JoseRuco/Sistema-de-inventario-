@@ -187,9 +187,12 @@ exports.getSales = (req, res) => {
       search = '', 
       clientId = '', 
       paymentMethod = '', 
-      startDate = '', 
-      endDate = '' 
+      startDate = '',
+      endDate = '',
+      includeSummary = 'true' 
     } = req.query;
+
+    const shouldIncludeSummary = includeSummary === 'true';
 
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 50;
@@ -226,17 +229,35 @@ exports.getSales = (req, res) => {
     }
 
     // 1. Query para contar totales (Resumen)
-    const summaryQuery = `
-      SELECT 
-        COUNT(*) as totalRecords,
-        COALESCE(SUM(v.monto_pagado), 0) as totalIncome,
-        COALESCE(SUM(CASE WHEN v.estado_pago = 'pendiente' THEN 1 ELSE 0 END), 0) as countPending,
-        COALESCE(SUM(CASE WHEN v.estado_pago = 'parcial' THEN 1 ELSE 0 END), 0) as countPartial
-      FROM ventas v
-      LEFT JOIN clientes c ON v.cliente_id = c.id
-      ${whereClause}
-    `;
-    const summary = db.prepare(summaryQuery).get(...params);
+    // 1. Query para contar totales (Resumen) - SOLO SI SE REQUIERE
+    let summary = { totalRecords: 0, totalIncome: 0, countPending: 0, countPartial: 0 };
+    
+    if (shouldIncludeSummary) {
+      const summaryQuery = `
+        SELECT 
+          COUNT(*) as totalRecords,
+          COALESCE(SUM(v.monto_pagado), 0) as totalIncome,
+          COALESCE(SUM(CASE WHEN v.estado_pago = 'pendiente' THEN 1 ELSE 0 END), 0) as countPending,
+          COALESCE(SUM(CASE WHEN v.estado_pago = 'parcial' THEN 1 ELSE 0 END), 0) as countPartial
+        FROM ventas v
+        LEFT JOIN clientes c ON v.cliente_id = c.id
+        ${whereClause}
+      `;
+      summary = db.prepare(summaryQuery).get(...params);
+    } else {
+        // Si no pedimos resumen, al menos necesitamos totalRecords para saber si hay más páginas
+        // O podemos devolver -1 si el frontend maneja la paginación infinita solo con "data.length < limit"
+        // Pero para mantener la paginación numerada, necesitamos el count.
+        // Optimización media: Solo contar records, no sumar dinero.
+        const countQuery = `
+            SELECT COUNT(*) as totalRecords 
+            FROM ventas v 
+            LEFT JOIN clientes c ON v.cliente_id = c.id
+            ${whereClause}
+        `;
+        const countResult = db.prepare(countQuery).get(...params);
+        summary.totalRecords = countResult.totalRecords;
+    }
 
     // 2. Query para obtener datos paginados
     const dataQuery = `

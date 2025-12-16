@@ -169,12 +169,31 @@ const initDB = () => {
       console.log('✅ Columna descuento añadida a la tabla ventas');
     }
 
-    // Añadir columna notas si no existe
+    // Añadir columna notas si no existe en ventas
     const hasNotas = tableInfo.some(col => col.name === 'notas');
     if (!hasNotas) {
       db.exec('ALTER TABLE ventas ADD COLUMN notas TEXT');
       console.log('✅ Columna notas añadida a la tabla ventas');
     }
+
+    // Añadir columna notas a pedidos si no existe
+    const tableInfoPedidos = db.prepare("PRAGMA table_info(pedidos)").all();
+    const hasNotasPedidos = tableInfoPedidos.some(col => col.name === 'notas'); // SQLite columns are case-insensitive usually but better consistent
+    if (!hasNotasPedidos) {
+      db.exec('ALTER TABLE pedidos ADD COLUMN notas TEXT');
+      console.log('✅ Columna notas añadida a la tabla pedidos');
+    }
+
+    // --- OPTIMIZACIÓN: Índices ---
+    console.log('🔍 Verificando índices...');
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_ventas_fecha ON ventas(fecha);
+      CREATE INDEX IF NOT EXISTS idx_ventas_cliente ON ventas(cliente_id);
+      CREATE INDEX IF NOT EXISTS idx_ventas_estado ON ventas(estado_pago);
+      CREATE INDEX IF NOT EXISTS idx_ventas_metodo ON ventas(metodo_pago);
+    `);
+    console.log('✅ Índices verificados/creados');
+
   } catch (error) {
     console.error('Error verificando/añadiendo columnas:', error);
   }
