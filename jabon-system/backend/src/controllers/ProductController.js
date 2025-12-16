@@ -174,33 +174,40 @@ const getProductStats = (req, res) => {
   try {
     const { id } = req.params;
 
-    // Obtener fecha de inicio del mes actual
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const firstDayString = firstDayOfMonth.toISOString().split('T')[0];
+    // Obtener fecha actual en Colombia usando el helper (formato YYYY-MM-DD HH:MM:SS)
+    const colombiaDateTime = getColombiaDateTime(); // "2025-12-15 19:00:00"
+    
+    // Extraer año y mes para el filtro (YYYY-MM)
+    // El formato es consistente, así que podemos usar substring
+    const currentMonthPrefix = colombiaDateTime.substring(0, 7); // "2025-12"
 
-    // Estadísticas del mes actual
+    // Estadísticas del mes actual (Uniendo con ventas para asegurar validez y SÓLO PAGADAS)
+    // Usamos strftime para comparar solo el mes y año (YYYY-MM)
     const monthStats = db.prepare(`
       SELECT 
         COALESCE(SUM(dv.cantidad), 0) as cantidad,
         COALESCE(SUM(dv.subtotal), 0) as total
-      FROM detalle_ventas dv
+      FROM ventas_detalles dv
       JOIN ventas v ON v.id = dv.venta_id
       WHERE dv.producto_id = ?
-        AND DATE(v.fecha) >= ?
-    `).get(id, firstDayString);
+        AND strftime('%Y-%m', v.fecha) = ?
+        AND v.estado_pago = 'pagado'
+    `).get(id, currentMonthPrefix);
 
-    // Estadísticas históricas (totales)
+    // Estadísticas históricas (Validando integridad de datos y SÓLO PAGADAS)
     const totalStats = db.prepare(`
       SELECT 
         p.id,
         p.nombre,
         p.stock,
-        COALESCE(SUM(dv.cantidad), 0) as cantidad,
-        COALESCE(SUM(dv.subtotal), 0) as total,
-        COUNT(DISTINCT dv.venta_id) as num_ventas
+        p.precio_costo,
+        p.precio_venta,
+        COALESCE(SUM(CASE WHEN v.id IS NOT NULL AND v.estado_pago = 'pagado' THEN dv.cantidad ELSE 0 END), 0) as cantidad,
+        COALESCE(SUM(CASE WHEN v.id IS NOT NULL AND v.estado_pago = 'pagado' THEN dv.subtotal ELSE 0 END), 0) as total,
+        COUNT(DISTINCT CASE WHEN v.estado_pago = 'pagado' THEN v.id END) as num_ventas
       FROM productos p
-      LEFT JOIN detalle_ventas dv ON dv.producto_id = p.id
+      LEFT JOIN ventas_detalles dv ON dv.producto_id = p.id
+      LEFT JOIN ventas v ON v.id = dv.venta_id
       WHERE p.id = ?
       GROUP BY p.id
     `).get(id);
@@ -214,6 +221,8 @@ const getProductStats = (req, res) => {
       id: totalStats.id,
       nombre: totalStats.nombre,
       stock: totalStats.stock,
+      precio_costo: totalStats.precio_costo,
+      precio_venta: totalStats.precio_venta,
       monthSales: {
         cantidad: monthStats.cantidad || 0,
         total: monthStats.total || 0

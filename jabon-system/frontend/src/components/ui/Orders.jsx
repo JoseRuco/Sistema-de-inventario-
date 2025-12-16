@@ -245,11 +245,11 @@ const Orders = () => {
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Productos:</p>
                     {order.productos.map((prod, idx) => (
                       <div key={idx} className="flex justify-between items-center text-sm border-b border-gray-50 pb-1 last:border-0">
-                        <span className="text-gray-700">{prod.nombre} <span className="px-1 py-1 bg-blue-100 text-blue-800 rounded text-xs">= {prod.presentacion}</span></span>
+                        <span className="text-gray-700">{prod.nombre} = <span className="px-1 py-1 bg-blue-100 text-blue-800 rounded text-xs"> {prod.presentacion}</span></span>
                         <div className="flex items-center gap-2">
                            <span className="font-bold bg-gray-100 px-2 py-0.5 rounded text-gray-700">x{prod.cantidad}</span>
                            {prod.stock_actual < prod.cantidad && (
-                             <AlertCircle size={14} className="text-red-500" title="Stock insuficiente" />
+                             <AlertCircle size={20} className="text-red-500" title="Stock insuficiente" />
                            )}
                         </div>
                       </div>

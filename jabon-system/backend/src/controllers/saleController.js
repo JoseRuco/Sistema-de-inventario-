@@ -178,10 +178,68 @@ exports.createSale = (req, res) => {
   }
 };
 
-// Obtener todas las ventas
+// Obtener todas las ventas con paginación y filtros
 exports.getSales = (req, res) => {
   try {
-    const ventas = db.prepare(`
+    let { 
+      page = 1, 
+      limit = 50, 
+      search = '', 
+      clientId = '', 
+      paymentMethod = '', 
+      startDate = '', 
+      endDate = '' 
+    } = req.query;
+
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 50;
+    const offset = (page - 1) * limit;
+    
+    const params = [];
+    let whereClause = 'WHERE 1=1';
+
+    // Construir WHERE dinámico
+    if (search) {
+      whereClause += ` AND (v.id LIKE ? OR c.nombre LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (clientId) {
+      whereClause += ` AND v.cliente_id = ?`;
+      params.push(clientId);
+    }
+
+    if (paymentMethod) {
+      whereClause += ` AND v.metodo_pago = ?`;
+      params.push(paymentMethod);
+    }
+
+    // Filtro de fecha
+    if (startDate) {
+      whereClause += ` AND date(v.fecha) >= ?`;
+      params.push(startDate);
+    }
+    
+    if (endDate) {
+      whereClause += ` AND date(v.fecha) <= ?`;
+      params.push(endDate);
+    }
+
+    // 1. Query para contar totales (Resumen)
+    const summaryQuery = `
+      SELECT 
+        COUNT(*) as totalRecords,
+        COALESCE(SUM(v.monto_pagado), 0) as totalIncome,
+        COALESCE(SUM(CASE WHEN v.estado_pago = 'pendiente' THEN 1 ELSE 0 END), 0) as countPending,
+        COALESCE(SUM(CASE WHEN v.estado_pago = 'parcial' THEN 1 ELSE 0 END), 0) as countPartial
+      FROM ventas v
+      LEFT JOIN clientes c ON v.cliente_id = c.id
+      ${whereClause}
+    `;
+    const summary = db.prepare(summaryQuery).get(...params);
+
+    // 2. Query para obtener datos paginados
+    const dataQuery = `
       SELECT 
         v.id,
         v.fecha,
@@ -198,10 +256,32 @@ exports.getSales = (req, res) => {
         c.direccion
       FROM ventas v
       LEFT JOIN clientes c ON v.cliente_id = c.id
+      ${whereClause}
       ORDER BY v.fecha DESC
-    `).all();
+      LIMIT ? OFFSET ?
+    `;
 
-    res.json({ success: true, data: ventas });
+    // Añadir limit y offset a los parámetros para la query de datos
+    const dataParams = [...params, limit, offset];
+    const ventas = db.prepare(dataQuery).all(...dataParams);
+
+    res.json({ 
+      success: true, 
+      data: ventas,
+      pagination: {
+        page: page,
+        limit: limit,
+        totalRecords: summary.totalRecords || 0,
+        totalPages: Math.ceil((summary.totalRecords || 0) / limit)
+      },
+      summary: {
+        totalIncome: summary.totalIncome,
+        countPending: summary.countPending,
+        countPartial: summary.countPartial,
+        totalRecords: summary.totalRecords
+      }
+    });
+
   } catch (error) {
     console.error('Error obteniendo ventas:', error);
     res.status(500).json({

@@ -152,7 +152,9 @@ exports.getPortfolioSummary = (req, res) => {
       SELECT 
         COUNT(*) as total_ventas_pendientes,
         SUM(monto_pendiente) as total_pendiente,
-        COUNT(DISTINCT cliente_id) as clientes_con_deuda
+        COUNT(DISTINCT cliente_id) as clientes_con_deuda,
+        SUM(CASE WHEN estado_pago = 'pendiente' THEN 1 ELSE 0 END) as count_pendiente,
+        SUM(CASE WHEN estado_pago = 'parcial' THEN 1 ELSE 0 END) as count_parcial
       FROM ventas
       WHERE estado_pago IN ('pendiente', 'parcial')
     `).get();

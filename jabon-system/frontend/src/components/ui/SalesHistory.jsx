@@ -33,35 +33,96 @@ function getSaleDayISO(fecha) {
 
 const SalesHistory = () => {
   const [sales, setSales] = useState([]);
-  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [clients, setClients] = useState([]);
+  
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [summary, setSummary] = useState({
+    totalIncome: 0,
+    countPending: 0,
+    countPartial: 0,
+    totalRecords: 0
+  });
+
   const [selectedSale, setSelectedSale] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
+  // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [filterClient, setFilterClient] = useState('');
   const [filterPaymentMethod, setFilterPaymentMethod] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+  // Debounce search
   useEffect(() => {
-    loadData();
+    const timer = setTimeout(() => {
+      loadData(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm, filterClient, filterPaymentMethod, startDate, endDate]);
+
+  // Initial Data Load (Clients)
+  useEffect(() => {
+    loadClients();
   }, []);
 
-  const loadData = async () => {
+  const loadClients = async () => {
     try {
-      const [salesRes, clientsRes] = await Promise.all([
-        getSales(),
-        getClients()
-      ]);
-
-      setSales(salesRes.data.data || salesRes.data || []);
-      setClients(clientsRes.data || []);
+      const res = await getClients();
+      setClients(res.data || []);
     } catch (error) {
-      console.error('Error cargando datos:', error);
+      console.error('Error loading clients:', error);
+    }
+  };
+
+  const loadData = async (isLoadMore = false) => {
+    try {
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setPage(1); // Reset page on new filter
+      }
+
+      const currentPage = isLoadMore ? page + 1 : 1;
+
+      const params = {
+        page: currentPage,
+        limit: 50,
+        search: searchTerm,
+        clientId: filterClient,
+        paymentMethod: filterPaymentMethod,
+        startDate: startDate,
+        endDate: endDate
+      };
+
+      const response = await getSales(params);
+      const { data, pagination, summary: serverSummary } = response.data;
+
+      if (isLoadMore) {
+        setSales(prev => [...prev, ...data]);
+        setPage(currentPage);
+      } else {
+        setSales(data);
+      }
+
+      setSummary(serverSummary);
+      setHasMore(data.length === 50 && (isLoadMore ? sales.length + data.length : data.length) < pagination.totalRecords);
+
+    } catch (error) {
+      console.error('Error cargando ventas:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  };
+
+  const handleLoadMore = () => {
+    loadData(true);
   };
 
   const handleViewDetails = async (saleId) => {
@@ -69,36 +130,16 @@ const SalesHistory = () => {
     setDetailsModalOpen(true);
   };
 
-  const filteredSales = sales.filter(sale => {
-    const matchesSearch =
-      sale.id.toString().includes(searchTerm) ||
-      (sale.cliente_nombre && sale.cliente_nombre.toLowerCase().includes(searchTerm.toLowerCase()));
-
-    const matchesClient = !filterClient || sale.cliente_id?.toString() === filterClient;
-    const matchesPaymentMethod = !filterPaymentMethod || sale.metodo_pago === filterPaymentMethod;
-
-    let matchesDateRange = true;
-    if (startDate || endDate) {
-      const saleDay = getSaleDayISO(sale.fecha);
-      if (startDate && saleDay < startDate) matchesDateRange = false;
-      if (endDate && saleDay > endDate) matchesDateRange = false;
-    }
-
-    return matchesSearch && matchesClient && matchesPaymentMethod && matchesDateRange;
-  });
-
-  // ✅ SOLO SUMA DINERO PAGADO
-  const totalVentas = filteredSales.reduce((sum, sale) => sum + (sale.monto_pagado || 0), 0);
-
   const clearFilters = () => {
     setSearchTerm('');
     setFilterClient('');
     setFilterPaymentMethod('');
     setStartDate('');
     setEndDate('');
+    // Effectively triggers useEffect -> loadData(false)
   };
 
-  if (loading) {
+  if (loading && page === 1) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -122,7 +163,7 @@ const SalesHistory = () => {
             <div className="flex items-center gap-6 mt-4 text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-300 rounded-full"></div>
-                <span>{filteredSales.length} ventas registradas</span>
+                <span>{summary?.totalRecords || 0} ventas registradas</span>
               </div>
             </div>
           </div>
@@ -211,7 +252,7 @@ const SalesHistory = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Total de Ventas</p>
-              <p className="text-3xl font-bold text-blue-600">{filteredSales.length}</p>
+              <p className="text-3xl font-bold text-blue-600">{summary?.totalRecords || 0}</p>
             </div>
             <ShoppingCart className="text-blue-600" size={40} />
           </div>
@@ -221,7 +262,7 @@ const SalesHistory = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Ingresos Totales</p>
-              <p className="text-3xl font-bold text-green-600">${totalVentas.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-green-600">${(summary?.totalIncome || 0).toLocaleString()}</p>
             </div>
             <DollarSign className="text-green-600" size={40} />
           </div>
@@ -232,7 +273,7 @@ const SalesHistory = () => {
             <div>
               <p className="text-sm text-red-600 font-medium mb-1">Ventas Pendientes</p>
               <p className="text-3xl font-bold text-red-600">
-                {filteredSales.filter(sale => sale.estado_pago === 'pendiente').length}
+                {summary.countPending}
               </p>
               <p className="text-xs text-red-500 mt-1">Sin pagar</p>
             </div>
@@ -245,7 +286,7 @@ const SalesHistory = () => {
             <div>
               <p className="text-sm text-yellow-700 font-medium mb-1">Ventas Parciales</p>
               <p className="text-3xl font-bold text-yellow-700">
-                {filteredSales.filter(sale => sale.estado_pago === 'parcial').length}
+                {summary.countPartial}
               </p>
               <p className="text-xs text-yellow-600 mt-1">Pago parcial</p>
             </div>
@@ -269,7 +310,7 @@ const SalesHistory = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredSales.length === 0 ? (
+              {sales.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
                     <ShoppingCart size={48} className="mx-auto mb-3 text-gray-300" />
@@ -277,8 +318,8 @@ const SalesHistory = () => {
                   </td>
                 </tr>
               ) : (
-                filteredSales.map((sale) => (
-                  <tr key={sale.id} className="hover:bg-gray-50 transition-colors">
+                sales.map((sale) => (
+                  <tr key={`${sale.id}-${sale.fecha}`} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-semibold text-gray-900">#{sale.id}</span>
                     </td>
@@ -340,6 +381,26 @@ const SalesHistory = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Load More Button */}
+        {hasMore && (
+           <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-center">
+             <button
+               onClick={handleLoadMore}
+               disabled={loadingMore}
+               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+             >
+               {loadingMore ? (
+                 <>
+                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                   Cargando...
+                 </>
+               ) : (
+                 'Mostrar más'
+               )}
+             </button>
+           </div>
+        )}
       </div>
 
       <SaleDetailsModal

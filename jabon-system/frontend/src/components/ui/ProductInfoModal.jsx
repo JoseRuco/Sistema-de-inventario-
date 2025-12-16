@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, Package, DollarSign, TrendingUp, Calendar, ShoppingCart, AlertCircle } from 'lucide-react';
 import { getProductStats } from '../../services/api';
+import Portal from './Portal';
 
 const ProductInfoModal = ({ isOpen, product, onClose }) => {
   const [stats, setStats] = useState(null);
@@ -8,6 +9,7 @@ const ProductInfoModal = ({ isOpen, product, onClose }) => {
 
   useEffect(() => {
     if (isOpen && product) {
+      setStats(null); // ✅ Limpiar datos anteriores para evitar información mezclada
       fetchProductStats();
     }
   }, [isOpen, product]);
@@ -27,43 +29,58 @@ const ProductInfoModal = ({ isOpen, product, onClose }) => {
 
   if (!isOpen || !product) return null;
 
-  const margen = product.precio_venta - product.precio_costo;
-  const porcentajeMargen = ((margen / product.precio_costo) * 100).toFixed(1);
+  // Usar datos de stats si están disponibles, si no, usar los props
+  const displayProduct = stats ? {
+    ...product,
+    stock: stats.stock,
+    precio_costo: stats.precio_costo,
+    precio_venta: stats.precio_venta
+  } : product;
+
+  // Si está cargando y no hay stats, mostrar "..."
+  const showLoading = loading && !stats;
+
+  const margen = displayProduct.precio_venta - displayProduct.precio_costo;
+  const porcentajeMargen = displayProduct.precio_costo > 0 
+    ? ((margen / displayProduct.precio_costo) * 100).toFixed(1) 
+    : 0;
 
   const getStockStatus = (stock) => {
+    if (showLoading) return { text: 'Cargando...', color: 'text-gray-600', bg: 'bg-gray-100' };
     if (stock === 0) return { text: 'Sin Stock', color: 'text-red-600', bg: 'bg-red-100' };
     if (stock < 10) return { text: 'Stock Bajo', color: 'text-yellow-600', bg: 'bg-yellow-100' };
     return { text: 'Stock Bueno', color: 'text-green-600', bg: 'bg-green-100' };
   };
 
-  const stockStatus = getStockStatus(product.stock);
+  const stockStatus = getStockStatus(displayProduct.stock);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-t-2xl flex justify-between items-start">
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold mb-2">{product.nombre}</h2>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm">
-                {product.tipo}
-              </span>
-              <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm">
-                {product.presentacion}
-              </span>
-              <span className={`px-3 py-1 ${stockStatus.bg} ${stockStatus.color} rounded-full text-sm font-semibold`}>
-                {stockStatus.text}
-              </span>
+    <Portal>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+          {/* Header */}
+          <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-t-2xl flex justify-between items-start">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold mb-2">{displayProduct.nombre}</h2>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm">
+                  {displayProduct.tipo}
+                </span>
+                <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm">
+                  {displayProduct.presentacion}
+                </span>
+                <span className={`px-3 py-1 ${stockStatus.bg} ${stockStatus.color} rounded-full text-sm font-semibold`}>
+                  {stockStatus.text}
+                </span>
+              </div>
             </div>
+            <button
+              onClick={onClose}
+              className="ml-4 p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="ml-4 p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
 
         {/* Content */}
         <div className="p-6 space-y-6">
@@ -71,27 +88,37 @@ const ProductInfoModal = ({ isOpen, product, onClose }) => {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600 mb-1">ID</p>
-              <p className="text-lg font-semibold text-gray-900">#{product.id}</p>
+              <p className="text-lg font-semibold text-gray-900">#{displayProduct.id}</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600 mb-1">Stock Actual</p>
-              <p className="text-lg font-semibold text-gray-900">{product.stock}</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {showLoading ? '...' : displayProduct.stock}
+              </p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600 mb-1">Precio Costo</p>
-              <p className="text-lg font-semibold text-gray-900">${product.precio_costo.toLocaleString()}</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {showLoading ? '...' : `$${displayProduct.precio_costo.toLocaleString()}`}
+              </p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600 mb-1">Precio Venta</p>
-              <p className="text-lg font-semibold text-gray-900">${product.precio_venta.toLocaleString()}</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {showLoading ? '...' : `$${displayProduct.precio_venta.toLocaleString()}`}
+              </p>
             </div>
             <div className="bg-green-50 p-4 rounded-lg">
               <p className="text-sm text-green-600 mb-1">Ganancia por Unidad</p>
-              <p className="text-lg font-semibold text-green-700">${margen.toLocaleString()}</p>
+              <p className="text-lg font-semibold text-green-700">
+                {showLoading ? '...' : `$${margen.toLocaleString()}`}
+              </p>
             </div>
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-blue-600 mb-1">Margen</p>
-              <p className="text-lg font-semibold text-blue-700">{porcentajeMargen}%</p>
+              <p className="text-lg font-semibold text-blue-700">
+                {showLoading ? '...' : `${porcentajeMargen}%`}
+              </p>
             </div>
           </div>
 
@@ -193,6 +220,7 @@ const ProductInfoModal = ({ isOpen, product, onClose }) => {
         </div>
       </div>
     </div>
+    </Portal>
   );
 };
 

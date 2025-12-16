@@ -37,7 +37,7 @@ export const updateClient = (id, data) => api.put(`/clientes/${id}`, data);
 export const deleteClient = (id) => api.delete(`/clientes/${id}`);
 
 // VENTAS - ✅ CORREGIDO
-export const getSales = () => api.get('/sales');
+export const getSales = (params) => api.get('/sales', { params });
 export const getSale = (id) => api.get(`/sales/${id}`);
 export const createSale = (data) => api.post('/sales', data);
 export const searchSales = (params) => api.get('/sales/search', { params });

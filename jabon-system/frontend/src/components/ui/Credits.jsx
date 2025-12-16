@@ -4,6 +4,7 @@ import { getPendingDebts, getPortfolioSummary, registerPayment, getPaymentHistor
 import PaymentModal from './PaymentModal';
 import PaymentHistoryModal from './PaymentHistoryModal';
 import SaleDetailsModal from './SaleDetailsModal';
+import SuccessModal from './SuccessModal';
 
 const Credits = () => {
   const [debts, setDebts] = useState([]);
@@ -28,6 +29,12 @@ const Credits = () => {
   const [saleDetailsModal, setSaleDetailsModal] = useState({
     isOpen: false,
     ventaId: null
+  });
+  const [successModal, setSuccessModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    amount: 0
   });
 
   useEffect(() => {
@@ -59,6 +66,12 @@ const Credits = () => {
     try {
       await registerPayment(paymentData);
       setPaymentModal({ isOpen: false, debt: null });
+      setSuccessModal({
+        isOpen: true,
+        title: '¡Abono Registrado!',
+        message: 'El abono se ha registrado exitosamente',
+        amount: paymentData.monto
+      });
       loadData(); // Recargar datos
     } catch (error) {
       console.error('Error registrando pago:', error);
@@ -132,7 +145,7 @@ const Credits = () => {
         </div>
 
         {/* Tarjetas de resumen */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur-sm">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-white bg-opacity-30 rounded-lg">
@@ -140,7 +153,7 @@ const Credits = () => {
               </div>
               <div>
                 <p className="text-orange-100 text-sm font-medium">Total por Cobrar</p>
-                <p className="text-3xl font-bold">${(summary.total_pendiente || 0).toLocaleString()}</p>
+                <p className="text-2xl font-bold">${(summary.total_pendiente || 0).toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -148,11 +161,11 @@ const Credits = () => {
           <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur-sm">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-white bg-opacity-30 rounded-lg">
-                <AlertCircle className="w-6 h-6" />
+                <FileText className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-orange-100 text-sm font-medium">Ventas Pendientes</p>
-                <p className="text-3xl font-bold">{summary.total_ventas_pendientes || 0}</p>
+                <p className="text-orange-100 text-sm font-medium">Total Facturas</p>
+                <p className="text-2xl font-bold">{summary.total_ventas_pendientes || 0}</p>
               </div>
             </div>
           </div>
@@ -163,8 +176,32 @@ const Credits = () => {
                 <Users className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-orange-100 text-sm font-medium">Clientes con Deuda</p>
-                <p className="text-3xl font-bold">{summary.clientes_con_deuda || 0}</p>
+                <p className="text-orange-100 text-sm font-medium">Clientes</p>
+                <p className="text-2xl font-bold">{summary.clientes_con_deuda || 0}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white bg-opacity-30 rounded-lg">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-orange-100 text-sm font-medium">Solo Pendientes</p>
+                <p className="text-2xl font-bold">{summary.count_pendiente || 0}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white bg-opacity-30 rounded-lg">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-orange-100 text-sm font-medium">Solo Parcial</p>
+                <p className="text-2xl font-bold">{summary.count_parcial || 0}</p>
               </div>
             </div>
           </div>
@@ -325,6 +362,16 @@ const Credits = () => {
           isOpen={saleDetailsModal.isOpen}
           ventaId={saleDetailsModal.ventaId}
           onClose={() => setSaleDetailsModal({ isOpen: false, ventaId: null })}
+        />
+      )}
+
+      {successModal.isOpen && (
+        <SuccessModal
+          isOpen={successModal.isOpen}
+          title={successModal.title}
+          message={successModal.message}
+          amount={successModal.amount}
+          onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
         />
       )}
     </div>
