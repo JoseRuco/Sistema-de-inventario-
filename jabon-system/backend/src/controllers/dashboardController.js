@@ -193,10 +193,10 @@ const getChartData = (req, res) => {
         p.tipo,
         p.presentacion,
         COALESCE(SUM(vd.cantidad), 0) as cantidad_vendida,
-        COALESCE(SUM(vd.subtotal), 0) as total_vendido
+        COALESCE(SUM(vd.subtotal * (CAST(vd.v_total AS REAL) / (vd.v_total + vd.v_descuento))), 0) as total_vendido
       FROM productos p
       LEFT JOIN (
-        SELECT vd.producto_id, vd.cantidad, vd.subtotal
+        SELECT vd.producto_id, vd.cantidad, vd.subtotal, v.total as v_total, v.descuento as v_descuento
         FROM ventas_detalles vd
         INNER JOIN ventas v ON vd.venta_id = v.id
         WHERE v.monto_pagado >= v.total
@@ -412,11 +412,11 @@ const getTopProductsByDateRange = (req, res) => {
         p.presentacion,
         p.precio_costo,
         COALESCE(SUM(vd.cantidad), 0) as total_vendido,
-        COALESCE(SUM(vd.subtotal), 0) as total_ingresos,
-        COALESCE(SUM(vd.subtotal - (vd.cantidad * p.precio_costo)), 0) as ganancia_total
+        COALESCE(SUM(vd.subtotal * (CAST(vd.v_total AS REAL) / (vd.v_total + vd.v_descuento))), 0) as total_ingresos,
+        COALESCE(SUM((vd.subtotal * (CAST(vd.v_total AS REAL) / (vd.v_total + vd.v_descuento))) - (vd.cantidad * p.precio_costo)), 0) as ganancia_total
       FROM productos p
       LEFT JOIN (
-        SELECT vd.producto_id, vd.cantidad, vd.subtotal
+        SELECT vd.producto_id, vd.cantidad, vd.subtotal, v.total as v_total, v.descuento as v_descuento
         FROM ventas_detalles vd
         INNER JOIN ventas v ON vd.venta_id = v.id
         WHERE DATE(v.fecha) BETWEEN ? AND ?

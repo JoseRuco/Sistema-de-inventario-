@@ -1,14 +1,25 @@
 import axios from 'axios';
 
-// Detecta automáticamente si estás en red local o localhost
 const getAPIUrl = () => {
-  const hostname = window.location.hostname;
+  // 1. Permitir configuración por variable de entorno
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
 
-  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+  const hostname = window.location.hostname;
+  const port = window.location.port;
+
+  // 2. Desarrollo (Localhost O Red Local en puerto Vite defecto 5173)
+  // Si estamos en el puerto 5173, significa que es desarrollo (PC o Tablet en red local)
+  // En este caso, el backend siempre está en el puerto 5000 de la misma IP
+  if (port === '5173' || hostname === 'localhost' || hostname === '127.0.0.1') {
     return `http://${hostname}:5000/api`;
   }
 
-  return 'http://localhost:5000/api';
+  // 3. Producción (Docker/Domain)
+  // Si no es el puerto de desarrollo, asumimos producción (Nginx sirviendo en puerto 80/443)
+  // Usamos ruta relativa para que Nginx haga el proxy
+  return '/api';
 };
 
 const API_URL = getAPIUrl();

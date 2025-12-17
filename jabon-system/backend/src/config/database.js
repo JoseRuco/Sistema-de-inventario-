@@ -1,7 +1,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const dbPath = path.resolve(__dirname, '../../db/database_vieja.db');
+const dbPath = path.resolve(__dirname, '../../db/database_vacia-3.db');
 const db = new Database(dbPath);
 console.log('✅ Base de datos conectada en:', dbPath);
 

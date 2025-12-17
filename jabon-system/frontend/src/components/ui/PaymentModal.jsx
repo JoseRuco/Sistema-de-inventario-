@@ -146,11 +146,11 @@ const PaymentModal = ({ isOpen, debt, onClose, onSubmit }) => {
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Método de Pago
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 gap-3">
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, metodo_pago: 'efectivo' })}
-                  className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
+                  className={`flex items-center justify-center gap-2 px-2 py-3 rounded-lg border-2 transition-all ${
                     formData.metodo_pago === 'efectivo'
                       ? 'border-green-500 bg-green-50 text-green-700'
                       : 'border-gray-300 hover:border-gray-400'
@@ -163,7 +163,7 @@ const PaymentModal = ({ isOpen, debt, onClose, onSubmit }) => {
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, metodo_pago: 'transferencia' })}
-                  className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
+                  className={`flex items-center justify-center gap-2 px-2 py-3 rounded-lg border-2 transition-all ${
                     formData.metodo_pago === 'transferencia'
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-300 hover:border-gray-400'
@@ -172,19 +172,7 @@ const PaymentModal = ({ isOpen, debt, onClose, onSubmit }) => {
                   <CreditCard className="w-5 h-5" />
                   <span className="text-sm font-medium">Transfer.</span>
                 </button>
-
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, metodo_pago: 'tarjeta' })}
-                  className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
-                    formData.metodo_pago === 'tarjeta'
-                      ? 'border-purple-500 bg-purple-50 text-purple-700'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <CreditCard className="w-5 h-5" />
-                  <span className="text-sm font-medium">Tarjeta</span>
-                </button>
+                
               </div>
             </div>
 

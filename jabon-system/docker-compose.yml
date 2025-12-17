@@ -20,7 +20,7 @@ services:
     ports:
       - "3000:3000" # Opcional: solo si quieres acceder a la API directamente
     volumes:
-      - ./backend/data:/app/data # Persistencia de datos (SQLite y adjuntos)
+      - ./backend/db:/app/db # Persistencia de datos (SQLite y adjuntos)
     environment:
       - NODE_ENV=production
       - PORT=3000

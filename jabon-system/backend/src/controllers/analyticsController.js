@@ -242,11 +242,12 @@ exports.getProfitMarginByCategory = (req, res) => {
         p.tipo as categoria,
         COUNT(DISTINCT p.id) as num_productos,
         COALESCE(SUM(vd.cantidad), 0) as unidades_vendidas,
-        COALESCE(SUM(vd.subtotal), 0) as ingresos_categoria,
+        COALESCE(SUM(vd.subtotal * (CAST(v.total AS REAL) / (v.total + v.descuento))), 0) as ingresos_categoria,
         COALESCE(SUM(vd.cantidad * p.precio_costo), 0) as costos_categoria,
-        COALESCE(SUM(vd.subtotal - (vd.cantidad * p.precio_costo)), 0) as ganancia_categoria
+        COALESCE(SUM((vd.subtotal * (CAST(v.total AS REAL) / (v.total + v.descuento))) - (vd.cantidad * p.precio_costo)), 0) as ganancia_categoria
       FROM productos p
       INNER JOIN ventas_detalles vd ON p.id = vd.producto_id
+      INNER JOIN ventas v ON vd.venta_id = v.id
       WHERE vd.venta_id IN (${placeholders})
       GROUP BY p.tipo
       ORDER BY ganancia_categoria DESC

@@ -186,7 +186,7 @@ const getProductStats = (req, res) => {
     const monthStats = db.prepare(`
       SELECT 
         COALESCE(SUM(dv.cantidad), 0) as cantidad,
-        COALESCE(SUM(dv.subtotal), 0) as total
+        COALESCE(SUM(dv.subtotal * (CAST(v.total AS REAL) / (v.total + v.descuento))), 0) as total
       FROM ventas_detalles dv
       JOIN ventas v ON v.id = dv.venta_id
       WHERE dv.producto_id = ?
@@ -203,7 +203,7 @@ const getProductStats = (req, res) => {
         p.precio_costo,
         p.precio_venta,
         COALESCE(SUM(CASE WHEN v.id IS NOT NULL AND v.estado_pago = 'pagado' THEN dv.cantidad ELSE 0 END), 0) as cantidad,
-        COALESCE(SUM(CASE WHEN v.id IS NOT NULL AND v.estado_pago = 'pagado' THEN dv.subtotal ELSE 0 END), 0) as total,
+        COALESCE(SUM(CASE WHEN v.id IS NOT NULL AND v.estado_pago = 'pagado' THEN (dv.subtotal * (CAST(v.total AS REAL) / (v.total + v.descuento))) ELSE 0 END), 0) as total,
         COUNT(DISTINCT CASE WHEN v.estado_pago = 'pagado' THEN v.id END) as num_ventas
       FROM productos p
       LEFT JOIN ventas_detalles dv ON dv.producto_id = p.id

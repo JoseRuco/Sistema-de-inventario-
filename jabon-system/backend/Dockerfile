@@ -16,7 +16,7 @@ RUN npm ci --only=production
 COPY . .
 
 # Crear directorio para la base de datos (persistencia)
-RUN mkdir -p /app/data
+RUN mkdir -p /app/db
 
 # Exponer el puerto
 EXPOSE 3000
