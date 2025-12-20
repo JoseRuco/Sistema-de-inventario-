@@ -6,6 +6,7 @@
   "start_url": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "minimal-ui"],
+  "prefer_related_applications": false,
   "orientation": "portrait",
   "categories": ["productivity", "business", "finance"],
   "background_color": "#ffffff",

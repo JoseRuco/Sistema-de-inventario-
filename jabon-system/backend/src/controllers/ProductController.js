@@ -3,7 +3,7 @@ const { getColombiaDateTime } = require('../utils/dateHelper');
 
 // Obtener todos los productos (solo activos)
 const getAllProducts = (req, res) => {
-  try {
+  try { 
     const products = db.prepare('SELECT * FROM productos WHERE activo = 1 ORDER BY created_at DESC').all();
     res.json(products);
   } catch (error) {

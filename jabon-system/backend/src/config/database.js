@@ -1,7 +1,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const dbPath = path.resolve(__dirname, '../../db/database_vacia-3.db');
+const dbPath = path.resolve(__dirname, '../../db/database_vieja.db');
 const db = new Database(dbPath);
 console.log('✅ Base de datos conectada en:', dbPath);
 
@@ -163,7 +163,7 @@ const initDB = () => {
   try {
     const tableInfo = db.prepare("PRAGMA table_info(ventas)").all();
     const hasDescuento = tableInfo.some(col => col.name === 'descuento');
-    
+
     if (!hasDescuento) {
       db.exec('ALTER TABLE ventas ADD COLUMN descuento REAL DEFAULT 0');
       console.log('✅ Columna descuento añadida a la tabla ventas');

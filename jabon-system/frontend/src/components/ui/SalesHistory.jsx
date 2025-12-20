@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, Eye, ShoppingCart, DollarSign, Calendar, CreditCard, Wallet, User, AlertCircle } from 'lucide-react';
 import { getSales, getSale, getClients } from '../../services/api';
 import SaleDetailsModal from './SaleDetailsModal';
@@ -54,20 +54,14 @@ const SalesHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterClient, setFilterClient] = useState('');
   const [filterPaymentMethod, setFilterPaymentMethod] = useState('');
+  const [filterStatus, setFilterStatus] = useState(''); // 'pagado', 'pendiente', 'parcial'
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  // Debounce search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadData(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm, filterClient, filterPaymentMethod, startDate, endDate]);
-
-  // Initial Data Load (Clients)
+  // Carga inicial
   useEffect(() => {
     loadClients();
+    loadData(false);
   }, []);
 
   const loadClients = async () => {
@@ -79,13 +73,13 @@ const SalesHistory = () => {
     }
   };
 
-  const loadData = async (isLoadMore = false) => {
+  const loadData = async (isLoadMore = false, overrideParams = {}) => {
     try {
       if (isLoadMore) {
         setLoadingMore(true);
       } else {
         setLoading(true);
-        setPage(1); // Reset page on new filter
+        setPage(1); 
       }
 
       const currentPage = isLoadMore ? page + 1 : 1;
@@ -96,9 +90,11 @@ const SalesHistory = () => {
         search: searchTerm,
         clientId: filterClient,
         paymentMethod: filterPaymentMethod,
+        paymentStatus: filterStatus,
         startDate: startDate,
         endDate: endDate,
-        includeSummary: !isLoadMore // Solo pedir resumen en la primera carga o filtro nuevo
+        includeSummary: !isLoadMore,
+        ...overrideParams // Permitir sobrescribir valores inmediatos
       };
 
       const response = await getSales(params);
@@ -144,18 +140,21 @@ const SalesHistory = () => {
     setSearchTerm('');
     setFilterClient('');
     setFilterPaymentMethod('');
+    setFilterStatus('');
     setStartDate('');
     setEndDate('');
-    // Effectively triggers useEffect -> loadData(false)
+    loadData(false, {
+      search: '',
+      clientId: '',
+      paymentMethod: '',
+      paymentStatus: '',
+      startDate: '',
+      endDate: ''
+    });
   };
 
-  if (loading && page === 1) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  // Render simplificado: no desaparece todo al cargar
+  const showInitialLoading = loading && page === 1 && sales.length === 0;
 
   return (
     <div className="space-y-6">
@@ -192,7 +191,7 @@ const SalesHistory = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="ID o cliente..."
+                placeholder="ID, cliente o producto..."
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -245,20 +244,47 @@ const SalesHistory = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Todos los estados</option>
+              <option value="pagado">Pagado</option>
+              <option value="parcial">Parcial</option>
+              <option value="pendiente">Pendiente</option>
+            </select>
+          </div>
         </div>
 
-        {(searchTerm || filterClient || filterPaymentMethod || startDate || endDate) && (
+        <div className="flex gap-2 mt-4">
+          <button
+            onClick={() => loadData(false)}
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
+          >
+            <Search size={18} />
+            Filtrar
+          </button>
           <button
             onClick={clearFilters}
-            className="mt-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors"
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors"
           >
-            Limpiar Filtros
+            Limpiar
           </button>
-        )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div 
+          onClick={() => {
+            setFilterStatus('');
+            loadData(false, { paymentStatus: '' });
+          }}
+          className={`bg-white rounded-lg shadow-md p-6 cursor-pointer transition-all hover:scale-105 ${!filterStatus ? 'ring-2 ring-blue-500' : ''}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Total de Ventas</p>
@@ -278,7 +304,14 @@ const SalesHistory = () => {
           </div>
         </div>
 
-        <div className="bg-red-50 border border-red-200 rounded-lg shadow-md p-6">
+        <div 
+          onClick={() => {
+            const newStatus = filterStatus === 'pendiente' ? '' : 'pendiente';
+            setFilterStatus(newStatus);
+            loadData(false, { paymentStatus: newStatus });
+          }}
+          className={`bg-red-50 border border-red-200 rounded-lg shadow-md p-6 cursor-pointer transition-all hover:scale-105 ${filterStatus === 'pendiente' ? 'ring-2 ring-red-500 scale-105 shadow-lg' : ''}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-red-600 font-medium mb-1">Ventas Pendientes</p>
@@ -291,7 +324,14 @@ const SalesHistory = () => {
           </div>
         </div>
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg shadow-md p-6">
+        <div 
+          onClick={() => {
+            const newStatus = filterStatus === 'parcial' ? '' : 'parcial';
+            setFilterStatus(newStatus);
+            loadData(false, { paymentStatus: newStatus });
+          }}
+          className={`bg-yellow-50 border border-yellow-200 rounded-lg shadow-md p-6 cursor-pointer transition-all hover:scale-105 ${filterStatus === 'parcial' ? 'ring-2 ring-yellow-500 scale-105 shadow-lg' : ''}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-yellow-700 font-medium mb-1">Ventas Parciales</p>
@@ -319,8 +359,16 @@ const SalesHistory = () => {
                 <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {sales.length === 0 ? (
+            <tbody className="divide-y divide-gray-200 relative">
+              {showInitialLoading && (
+                <tr>
+                  <td colSpan="7" className="px-6 py-12 text-center bg-white bg-opacity-80">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Cargando ventas...</p>
+                  </td>
+                </tr>
+              )}
+              {!showInitialLoading && sales.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
                     <ShoppingCart size={48} className="mx-auto mb-3 text-gray-300" />

@@ -47,8 +47,15 @@ export const createClient = (data) => api.post('/clientes', data);
 export const updateClient = (id, data) => api.put(`/clientes/${id}`, data);
 export const deleteClient = (id) => api.delete(`/clientes/${id}`);
 
-// VENTAS - ✅ CORREGIDO
-export const getSales = (params) => api.get('/sales', { params });
+// VENTAS - ✅ REFORZADO con rompe-caché y construcción manual obligatoria
+export const getSales = (params) => {
+  const query = new URLSearchParams({
+    ...params,
+    _t: Date.now() // Rompe-caché temporal
+  }).toString();
+  
+  return api.get(`/sales?${query}`);
+};
 export const getSale = (id) => api.get(`/sales/${id}`);
 export const createSale = (data) => api.post('/sales', data);
 export const searchSales = (params) => api.get('/sales/search', { params });

@@ -1,12 +1,12 @@
 // Service Worker para Sistema de Inventario PWA
-const CACHE_VERSION = 'v1.0.6';
+const CACHE_VERSION = 'v1.0.7';
 const CACHE_NAME = `inventario-cache-${CACHE_VERSION}`;
 const API_CACHE = `inventario-api-${CACHE_VERSION}`;
 
 // Recursos críticos para pre-cachear (excluimos index.html para evitar que se quede pegado)
 const PRECACHE_URLS = [
     '/offline.html',
-    '/PNGLOGO.png',
+    '/logo/PNGLOGO.png',
     '/icons/icon-192.png',
     '/icons/icon-512.png'
 ];

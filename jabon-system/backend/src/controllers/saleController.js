@@ -186,11 +186,15 @@ exports.getSales = (req, res) => {
       limit = 50, 
       search = '', 
       clientId = '', 
+      client_id = '',
       paymentMethod = '', 
+      paymentStatus = '',
       startDate = '',
       endDate = '',
       includeSummary = 'true' 
     } = req.query;
+
+    const finalClientId = clientId || client_id;
 
     const shouldIncludeSummary = includeSummary === 'true';
 
@@ -203,18 +207,34 @@ exports.getSales = (req, res) => {
 
     // Construir WHERE dinámico
     if (search) {
-      whereClause += ` AND (v.id LIKE ? OR c.nombre LIKE ?)`;
-      params.push(`%${search}%`, `%${search}%`);
+      // Búsqueda por ID, Cliente O PRODUCTO
+      whereClause += ` AND (
+        v.id = ? 
+        OR v.id LIKE ? 
+        OR LOWER(c.nombre) LIKE LOWER(?) 
+        OR EXISTS (
+          SELECT 1 FROM ventas_detalles vd 
+          JOIN productos p ON vd.producto_id = p.id 
+          WHERE vd.venta_id = v.id AND LOWER(p.nombre) LIKE LOWER(?)
+        )
+      )`;
+      const searchPattern = `%${search}%`;
+      params.push(search, searchPattern, searchPattern, searchPattern);
     }
 
-    if (clientId) {
+    if (finalClientId) {
       whereClause += ` AND v.cliente_id = ?`;
-      params.push(clientId);
+      params.push(finalClientId);
     }
 
     if (paymentMethod) {
       whereClause += ` AND v.metodo_pago = ?`;
       params.push(paymentMethod);
+    }
+
+    if (paymentStatus) {
+      whereClause += ` AND v.estado_pago = ?`;
+      params.push(paymentStatus);
     }
 
     // Filtro de fecha
