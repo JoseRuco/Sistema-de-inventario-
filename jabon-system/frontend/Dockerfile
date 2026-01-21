@@ -1,3 +1,6 @@
+# ===================================
+# Etapa 1: Construcción
+# ===================================
 FROM node:20-alpine as builder
 
 # Establecer directorio de trabajo
@@ -12,20 +15,27 @@ RUN npm ci
 # Copiar el código fuente
 COPY . .
 
-# Construir la aplicación
+# Construir la aplicación para producción
 RUN npm run build
 
-# --- Etapa de Producción (Nginx) ---
+# ===================================
+# Etapa 2: Producción con Nginx
+# ===================================
 FROM nginx:alpine
-
-# Copiar configuración de Nginx personalizada (la crearemos más adelante o usamos la por defecto)
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copiar los archivos construidos desde la etapa anterior
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# La configuración de Nginx se monta desde docker-compose.yml
+# Esto permite actualizarla sin reconstruir la imagen
+
 # Exponer el puerto 80
 EXPOSE 80
 
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+
 # Iniciar Nginx
 CMD ["nginx", "-g", "daemon off;"]
+

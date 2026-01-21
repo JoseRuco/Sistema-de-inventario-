@@ -1,6 +1,50 @@
-node_modules
-data
-.git
+# Dependencias
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Variables de entorno (no incluir en imagen)
 .env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Base de datos (se monta como volumen)
+db/
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+logs/
+*.log
+
+# Archivos de sistema
 .DS_Store
-inventory.db
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Backups
+backups/
+*.backup
+
+# Temporales
+tmp/
+temp/

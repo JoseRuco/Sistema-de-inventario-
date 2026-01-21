@@ -1,5 +1,12 @@
+// Cargar variables de entorno
+require('dotenv').config({ path: '.env.production' });
+
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const compression = require('compression');
+const morgan = require('morgan');
 const os = require('os');
 
 const productRoutes = require('./routes/productRoutes');
@@ -13,16 +20,51 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+// ===== MIDDLEWARES DE SEGURIDAD =====
+
+// Helmet: Configurar headers de seguridad HTTP
+app.use(helmet({
+  contentSecurityPolicy: false, // Desactivar CSP para evitar conflictos con SPA
+  crossOriginEmbedderPolicy: false
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Compression: Compresión gzip para respuestas
+app.use(compression());
+
+// Logging con Morgan
+if (NODE_ENV === 'production') {
+  app.use(morgan('combined')); // Formato Apache combinado para producción
+} else {
+  app.use(morgan('dev')); // Formato simple para desarrollo
+}
+
+// Rate Limiting: Limitar requests para prevenir ataques DDoS
+const limiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutos por defecto
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // Límite de requests
+  message: 'Demasiadas peticiones desde esta IP, por favor intenta de nuevo más tarde.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Aplicar rate limiting a todas las rutas de API
+app.use('/api', limiter);
+
+// CORS: Configuración dinámica según entorno
+const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
+app.use(cors({
+  origin: allowedOrigin,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
+
+// Parseo de JSON y URL-encoded
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Rutas
 app.use('/api/productos', productRoutes);
@@ -64,6 +106,11 @@ app.listen(PORT, '0.0.0.0', () => {
 ║ • Localhost: http://localhost:${PORT}                    ║
 ║ • Red Local: http://${localIP}:${PORT}                ║
 ║                                                       ║
+║ 🔒 Configuración de Seguridad:                        ║
+║ • Entorno: ${NODE_ENV.toUpperCase().padEnd(42)} ║
+║ • CORS: ${allowedOrigin.padEnd(45)} ║
+║ • Rate Limit: ${(process.env.RATE_LIMIT_MAX_REQUESTS || 100) + ' req/15min'}                              ║
+║                                                       ║
 ║ Rutas API disponibles:                                ║ 
 ║ 📦 /api/productos                                     ║
 ║ 👥 /api/clientes                                      ║
@@ -73,8 +120,9 @@ app.listen(PORT, '0.0.0.0', () => {
 ║ 📋 /api/stock                                         ║     
 ║ ⚙️ /api/config                                        ║
 ║ 📈 /api/analytics                                     ║
+║ 🛒 /api/orders                                        ║
 ║                                                       ║    
-║            SISTEMA REALIAZADO POR: JOSE RUCO          ║
+║            SISTEMA REALIZADO POR: JOSE RUCO           ║
 ║                                                       ║
 ║                   PROGRAMMER {JR}                     ║
 ║                  software solutions                   ║
