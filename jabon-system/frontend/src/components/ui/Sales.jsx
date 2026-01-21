@@ -345,7 +345,7 @@ const Sales = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6 h-full overflow-hidden">
 
         {/* Panel de Productos */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-lg flex flex-col overflow-hidden">
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-lg flex flex-col overflow-hidden ">
           <div className="p-3 md:p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-3">
             <h2 className="text-lg md:text-xl font-bold text-gray-800">Productos Disponibles</h2>
 

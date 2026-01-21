@@ -284,33 +284,81 @@ const Orders = () => {
                      Al marcar como "En Camino", el pedido desaparecerá de esta lista.
                    </p>
                 </div>
-                
-                {/* Confirm Overlay */}
-                {confirmOrderId === order.id && (
-                  <div className="absolute inset-0 bg-white/95 z-10 flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-200">
-                    <AlertCircle size={48} className="text-blue-600 mb-3" />
-                    <h4 className="font-bold text-gray-800 text-lg mb-2">¿Confirmar entrega?</h4>
-                    <p className="text-sm text-gray-600 mb-6">Esta acción marcará el pedido como "En Camino" y lo quitará de esta lista.</p>
-                    <div className="flex gap-3 w-full">
-                      <button 
-                        onClick={() => setConfirmOrderId(null)}
-                        className="flex-1 py-2 text-gray-600 font-semibold hover:bg-gray-100 rounded-lg"
-                      >
-                        Cancelar
-                      </button>
-                      <button 
-                        onClick={confirmMarkAsEnCamino}
-                        className="flex-1 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md"
-                      >
-                        Sí, Completar
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             ))
           )}
         </div>
+      )}
+
+      {/* Modal de Confirmación de Entrega */}
+      {confirmOrderId && (
+        <Portal>
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6">
+                <div className="flex items-center justify-center">
+                  <div className="bg-white bg-opacity-20 p-3 rounded-full mb-2">
+                    <Truck size={32} className="text-white" />
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-white text-center">
+                  ¿Confirmar Entrega?
+                </h3>
+                <p className="text-green-100 text-sm text-center mt-2">
+                  Esta acción marcará el pedido como "En Camino"
+                </p>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="text-yellow-600 w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        El pedido desaparecerá de la lista de pedidos pendientes y se marcará como completado.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setConfirmOrderId(null)}
+                    className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={confirmMarkAsEnCamino}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg font-bold shadow-lg transition-all"
+                  >
+                    Sí, Completar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <style jsx>{`
+              @keyframes scale-in {
+                from {
+                  opacity: 0;
+                  transform: scale(0.9);
+                }
+                to {
+                  opacity: 1;
+                  transform: scale(1);
+                }
+              }
+
+              .animate-scale-in {
+                animation: scale-in 0.2s ease-out;
+              }
+            `}</style>
+          </div>
+        </Portal>
       )}
 
       {/* Modal Nuevo Pedido */}
@@ -319,18 +367,28 @@ const Orders = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
              
-             {/* Header */}
-             <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-blue-600 text-white">
-               <h2 className="text-xl font-bold flex items-center gap-2">
-                 <Plus size={24} /> Nuevo Pedido
-               </h2>
-               <button onClick={() => setShowNewOrderModal(false)} className="text-white hover:bg-white/20 p-1 rounded-full"><X size={24} /></button>
-             </div>
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 flex-shrink-0">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                      <Plus size={24} /> Nuevo Pedido
+                    </h2>
+                    <p className="text-blue-100 text-sm mt-1">Crea un nuevo pedido para un cliente</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowNewOrderModal(false)} 
+                    className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
 
              <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-6 relative bg-white">
                 
-                {/* Left Column: Client & Date & Cart */}
-                <div className="p-4 overflow-y-auto max-h-[40vh] lg:max-h-full border-b lg:border-b-0 lg:border-r border-gray-200 space-y-4">
+                 {/* Left Column: Client & Date & Cart */}
+                 <div className="p-6 overflow-y-auto max-h-[40vh] lg:max-h-full border-b lg:border-b-0 lg:border-r border-gray-200 space-y-4">
                   <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Datos del Cliente</h3>
                   
                   {/* Client Selection */}
@@ -439,8 +497,8 @@ const Orders = () => {
 
                 </div>
 
-                {/* Right Column: Product Selection - Must always be visible/scrollable */}
-                <div className="flex flex-col h-full overflow-hidden p-4 bg-white">
+                 {/* Right Column: Product Selection - Must always be visible/scrollable */}
+                 <div className="flex flex-col h-full overflow-hidden p-6 bg-white">
                    <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide mb-3">Agregar Productos</h3>
                    <div className="relative mb-3 shrink-0">
                       <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
@@ -479,21 +537,21 @@ const Orders = () => {
 
              </div>
 
-             {/* Footer Actions */}
-             <div className="p-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
-               <button 
-                 onClick={() => setShowNewOrderModal(false)}
-                 className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
-               >
-                 Cancelar
-               </button>
-               <button 
-                 onClick={handleSubmitOrder}
-                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg transition-transform transform active:scale-95"
-               >
-                 Guardar Pedido
-               </button>
-             </div>
+              {/* Footer Actions */}
+              <div className="p-6 border-t border-gray-200 bg-gray-50 flex gap-3 flex-shrink-0">
+                <button 
+                  onClick={() => setShowNewOrderModal(false)}
+                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={handleSubmitOrder}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg font-bold shadow-lg transition-all"
+                >
+                  Guardar Pedido
+                </button>
+              </div>
           </div>
         </div>
         </Portal>

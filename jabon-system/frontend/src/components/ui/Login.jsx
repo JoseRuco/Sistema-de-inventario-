@@ -38,7 +38,7 @@ const Login = ({ onLogin }) => {
         setError('Usuario o contraseña incorrectos');
         setIsLoading(false);
       }
-    }, 500);
+    }, 1000);
   };
 
   return (
