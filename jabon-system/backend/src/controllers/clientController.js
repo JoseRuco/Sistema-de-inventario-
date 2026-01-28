@@ -73,6 +73,15 @@ const updateClient = (req, res) => {
     const { id } = req.params;
     const { nombre, telefono, correo, direccion } = req.body;
 
+    // ✅ PROTECCIÓN: No permitir editar el Cliente General
+    if (parseInt(id) === 1) {
+      return res.status(403).json({
+        error: 'Cliente protegido',
+        message: 'No se puede editar el Cliente General',
+        details: 'Este es un cliente del sistema y no puede ser modificado'
+      });
+    }
+
     // ✅ NUEVO: Validar que el nombre no esté vacío
     if (!nombre || nombre.trim() === '') {
       return res.status(400).json({ 
@@ -114,6 +123,15 @@ const updateClient = (req, res) => {
 const deleteClient = (req, res) => {
   try {
     const { id } = req.params;
+
+    // ✅ PROTECCIÓN: No permitir eliminar el Cliente General
+    if (parseInt(id) === 1) {
+      return res.status(403).json({
+        error: 'Cliente protegido',
+        message: 'No se puede eliminar el Cliente General',
+        details: 'Este es un cliente del sistema y debe permanecer activo'
+      });
+    }
 
     // Verificar si el cliente tiene ventas
     const hasSales = db.prepare(`

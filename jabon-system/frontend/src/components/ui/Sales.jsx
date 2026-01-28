@@ -183,6 +183,18 @@ const Sales = () => {
       return;
     }
 
+    // ✅ Validar que no se hagan ventas fiadas al Cliente General
+    if (parseInt(selectedClient) === 1 && paymentType === 'credito') {
+      showNotification(
+        'warning',
+        'Venta No Permitida',
+        'No se pueden registrar ventas fiadas para el Cliente General. Use ventas al contado o cree un cliente específico.'
+      );
+      setPaymentType('contado');
+      setPartialPayment('');
+      return;
+    }
+
     const subtotal = getSubtotal();
     const discount = parseFloat(occasionalDiscount) || 0;
     
@@ -522,19 +534,38 @@ const Sales = () => {
                   <span className="sm:hidden">$</span>
                 </button>
 
+                {/* ✅ Deshabilitar crédito si es Cliente General */}
                 <button
                   type="button"
-                  onClick={() => setPaymentType('credito')}
-                  className={`flex items-center justify-center gap-1 px-2 md:px-3 py-2 rounded-lg border-2 transition-all text-xs font-semibold ${paymentType === 'credito'
-                    ? 'border-orange-500 bg-orange-50 text-orange-700'
-                    : 'border-gray-300'
+                  onClick={() => {
+                    if (parseInt(selectedClient) !== 1) {
+                      setPaymentType('credito');
+                    }
+                  }}
+                  disabled={parseInt(selectedClient) === 1}
+                  className={`flex items-center justify-center gap-1 px-2 md:px-3 py-2 rounded-lg border-2 transition-all text-xs font-semibold ${
+                    parseInt(selectedClient) === 1
+                      ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+                      : paymentType === 'credito'
+                        ? 'border-orange-500 bg-orange-50 text-orange-700'
+                        : 'border-gray-300'
                     }`}
+                  title={parseInt(selectedClient) === 1 ? 'No se pueden hacer ventas fiadas al Cliente General' : ''}
                 >
                   <CreditCard className="w-4 h-4" />
                   <span className="hidden sm:inline">Deuda</span>
                   <span className="sm:hidden">Deuda</span>
                 </button>
-              </div>                  
+              </div>
+              
+              {/* ✅ Advertencia cuando se selecciona Cliente General */}
+              {parseInt(selectedClient) === 1 && (
+                <div className="mt-2 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                  <p className="text-xs text-amber-800 font-medium">
+                    ⚠️ El Cliente General solo puede realizar compras al contado. Para ventas fiadas, cree un cliente específico.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Método de Pago */}

@@ -159,6 +159,26 @@ const initDB = () => {
     insertConfig.run('smtp_pass', '');
   }
 
+  // ✅ CREAR CLIENTE GENERAL POR DEFECTO (ID = 1)
+  try {
+    const generalClient = db.prepare('SELECT id FROM clientes WHERE id = 1').get();
+    
+    if (!generalClient) {
+      console.log('🔧 Creando Cliente General...');
+      // Insertar con ID específico = 1
+      db.prepare(`
+        INSERT INTO clientes (id, nombre, telefono, correo, direccion, activo)
+        VALUES (1, 'Cliente General', '', '', 'Sin dirección registrada', 1)
+      `).run();
+      console.log('✅ Cliente General creado con ID = 1');
+    } else {
+      console.log('✅ Cliente General ya existe (ID = 1)');
+    }
+  } catch (error) {
+    console.error('❌ Error verificando/creando Cliente General:', error);
+  }
+
+
   // Añadir columna descuento si no existe
   try {
     const tableInfo = db.prepare("PRAGMA table_info(ventas)").all();

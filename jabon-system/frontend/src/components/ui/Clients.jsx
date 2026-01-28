@@ -267,7 +267,15 @@ const Clients = () => {
                           <User className="text-blue-600" size={18} />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{client.nombre}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-gray-900">{client.nombre}</p>
+                            {/* ✅ Badge para Cliente General */}
+                            {client.id === 1 && (
+                              <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded-full font-medium">
+                                Sistema
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-500">ID: {client.id}</p>
                         </div>
                       </div>
@@ -311,20 +319,25 @@ const Clients = () => {
                         >
                           <History size={18} />
                         </button>
-                        <button
-                          onClick={() => handleEdit(client)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Editar"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(client)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Eliminar"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        {/* ✅ Ocultar botones de editar/eliminar para Cliente General (ID = 1) */}
+                        {client.id !== 1 && (
+                          <>
+                            <button
+                              onClick={() => handleEdit(client)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Editar"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(client)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Eliminar"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

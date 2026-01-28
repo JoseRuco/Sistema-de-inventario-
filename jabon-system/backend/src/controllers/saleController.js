@@ -25,6 +25,15 @@ exports.createSale = (req, res) => {
       });
     }
 
+    // ✅ VALIDACIÓN: No permitir ventas fiadas al Cliente General
+    if (parseInt(cliente_id) === 1 && estado_pago !== 'pagado') {
+      return res.status(400).json({
+        success: false,
+        error: 'No se pueden registrar ventas fiadas para el Cliente General',
+        message: 'El Cliente General solo puede realizar compras pagadas completamente. Si el cliente desea crédito, debe registrarse primero.'
+      });
+    }
+
     if (!productos || productos.length === 0) {
       return res.status(400).json({
         success: false,
