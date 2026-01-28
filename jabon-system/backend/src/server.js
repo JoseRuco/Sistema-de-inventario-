@@ -1,5 +1,8 @@
-// Cargar variables de entorno
-require('dotenv').config({ path: '.env.production' });
+// Cargar variables de entorno solo en producción
+// En desarrollo local, usa los valores por defecto del código
+if (process.env.NODE_ENV === 'production') {
+  require('dotenv').config({ path: '.env.production' });
+}
 
 const express = require('express');
 const cors = require('cors');
@@ -20,7 +23,7 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000; // 5000 para desarrollo, 3000 en Docker (via .env.production)
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // ===== MIDDLEWARES DE SEGURIDAD =====
@@ -41,17 +44,22 @@ if (NODE_ENV === 'production') {
   app.use(morgan('dev')); // Formato simple para desarrollo
 }
 
-// Rate Limiting: Limitar requests para prevenir ataques DDoS
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutos por defecto
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // Límite de requests
-  message: 'Demasiadas peticiones desde esta IP, por favor intenta de nuevo más tarde.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Aplicar rate limiting a todas las rutas de API
-app.use('/api', limiter);
+// Rate Limiting: Limitar requests para prevenir ataques DDoS (solo en producción)
+if (NODE_ENV === 'production') {
+  const limiter = rateLimit({
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutos por defecto
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // Límite de requests
+    message: 'Demasiadas peticiones desde esta IP, por favor intenta de nuevo más tarde.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  
+  // Aplicar rate limiting a todas las rutas de API
+  app.use('/api', limiter);
+  console.log('🔒 Rate limiting activado: ' + (process.env.RATE_LIMIT_MAX_REQUESTS || 100) + ' req/15min');
+} else {
+  console.log('⚠️  Rate limiting desactivado (modo desarrollo)');
+}
 
 // CORS: Configuración dinámica según entorno
 const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
