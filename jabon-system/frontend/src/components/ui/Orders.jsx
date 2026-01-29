@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Plus, Calendar, User, Search, Trash2, Check, Package, Truck, Clock, AlertCircle, X } from 'lucide-react';
-import { getOrders, createOrder, updateOrderStatus, getProducts, getClients, createClient } from '../../services/api';
+import { Plus, Calendar, User, Search, Trash2, Check, Package, Truck, Clock, AlertCircle, X, CheckCircle, RefreshCcw } from 'lucide-react';
+import { getOrders, createOrder, updateOrderStatus, updateOrder, getProducts, getClients, createClient } from '../../services/api';
 import Notification from './Notification';
 import ClientFormModal from './ClientFormModal';
 import Portal from './Portal';
@@ -12,6 +12,9 @@ const Orders = () => {
   const [clients, setClients] = useState([]);
   const [notification, setNotification] = useState(null);
   const [confirmOrderId, setConfirmOrderId] = useState(null);
+  const [successOrderId, setSuccessOrderId] = useState(null); // Estado para modal de éxito
+  const [rescheduleOrder, setRescheduleOrder] = useState(null); // Estado para reagendar de en traslado
+  const [newDate, setNewDate] = useState('');
 
   // New Order State
   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
@@ -39,12 +42,13 @@ const Orders = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [ordersRes, productsRes, clientsRes] = await Promise.all([
-        getOrders({ status: 'pendiente' }), // Initially fetch pending orders
+      const [ordersPendingRes, ordersTransitRes, productsRes, clientsRes] = await Promise.all([
+        getOrders({ status: 'pendiente' }), 
+        getOrders({ status: 'en_traslado' }),
         getProducts(),
         getClients()
       ]);
-      setOrders(ordersRes.data.data);
+      setOrders([...ordersPendingRes.data.data, ...ordersTransitRes.data.data]);
       setProducts(productsRes.data);
       setClients(clientsRes.data);
     } catch (error) {
@@ -140,13 +144,55 @@ const Orders = () => {
   const confirmMarkAsEnCamino = async () => {
     if (!confirmOrderId) return;
     try {
-      await updateOrderStatus(confirmOrderId, 'en_camino');
-      showNotification('success', 'Pedido Actualizado', 'El pedido ha sido marcado como "En Camino" y movido del listado pendiente.');
+      await updateOrderStatus(confirmOrderId, 'en_traslado');
+      showNotification('success', 'Pedido en Traslado', 'El pedido ahora está en traslado.');
       setConfirmOrderId(null);
       loadData(); 
     } catch (error) {
        console.error('Error updating order:', error);
        showNotification('error', 'Error', 'No se pudo actualizar el estado');
+    }
+  };
+
+  const handleOrderSuccess = (orderId) => {
+    setSuccessOrderId(orderId);
+  };
+
+  const confirmOrderSuccess = async () => {
+    if (!successOrderId) return;
+    try {
+        // Marcamos como entregado (completado)
+        await updateOrderStatus(successOrderId, 'entregado');
+        showNotification('success', 'Pedido Entregado', 'Venta exitosa. Recuerda registrar la venta.');
+        setSuccessOrderId(null);
+        loadData();
+    } catch (error) {
+        console.error('Error completing order:', error);
+        showNotification('error', 'Error', 'No se pudo completar el pedido');
+    }
+  };
+
+  const openRescheduleModal = (order) => {
+      setRescheduleOrder(order);
+      setNewDate('');
+  };
+
+  const handleRescheduleSubmit = async () => {
+    if (!newDate) {
+        showNotification('warning', 'Falta Fecha', 'Selecciona una nueva fecha');
+        return;
+    }
+    try {
+        await updateOrder(rescheduleOrder.id, {
+            fecha_entrega: newDate,
+            estado: 'pendiente'
+        });
+        showNotification('success', 'Pedido Reagendado', 'El pedido ha vuelto a pendientes con nueva fecha.');
+        setRescheduleOrder(null);
+        loadData();
+    } catch (error) {
+        console.error('Error rescheduling:', error);
+        showNotification('error', 'Error', 'No se pudo reagendar');
     }
   };
 
@@ -226,9 +272,9 @@ const Orders = () => {
                      <p className="text-xs text-gray-500">{order.cliente_telefono || 'Sin teléfono'}</p>
                   </div>
                   <span className={`px-2 py-1 rounded text-xs font-bold ${
-                      order.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
+                      order.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-700' : 'bg-purple-100 text-purple-700'
                   }`}>
-                    {order.estado.toUpperCase()}
+                    {order.estado === 'en_traslado' ? 'EN TRASLADO' : order.estado.toUpperCase()}
                   </span>
                 </div>
                 
@@ -273,16 +319,37 @@ const Orders = () => {
                 </div>
 
                 <div className="p-4 bg-gray-50 border-t border-gray-100 relative">
-                   <button 
-                     onClick={() => requestMarkAsEnCamino(order.id)}
-                     className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm"
-                   >
-                     <Truck size={18} />
-                     En Camino / Completar
-                   </button>
-                   <p className="text-xs text-center text-gray-500 mt-2">
-                     Al marcar como "En Camino", el pedido desaparecerá de esta lista.
-                   </p>
+                   {order.estado === 'pendiente' ? (
+                       <button 
+                         onClick={() => requestMarkAsEnCamino(order.id)}
+                         className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                       >
+                         <Truck size={18} />
+                         En Camino
+                       </button>
+                   ) : (
+                       <div className="flex gap-2">
+                           <button 
+                             onClick={() => handleOrderSuccess(order.id)}
+                             className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-1 shadow-sm"
+                           >
+                             <CheckCircle size={16} />
+                             PEDIDO EXITOSO
+                           </button>
+                           <button 
+                             onClick={() => openRescheduleModal(order)}
+                             className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-1 shadow-sm"
+                           >
+                             <RefreshCcw size={16} />
+                             RE AGENDAR
+                           </button>
+                       </div>
+                   )}
+                   {order.estado === 'pendiente' && (
+                       <p className="text-xs text-center text-gray-500 mt-2">
+                         Pasará a estado "En Traslado"
+                       </p>
+                   )}
                 </div>
               </div>
             ))
@@ -314,10 +381,11 @@ const Orders = () => {
               <div className="p-6">
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="text-yellow-600 w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <Truck className="text-blue-600 w-5 h-5 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm text-gray-700">
-                        El pedido desaparecerá de la lista de pedidos pendientes y se marcará como completado.
+                        El pedido cambiará de estado a <strong>EN TRASLADO</strong>. 
+                        Podrás marcarlo como exitoso o reagendarlo después.
                       </p>
                     </div>
                   </div>
@@ -333,9 +401,9 @@ const Orders = () => {
                   </button>
                   <button
                     onClick={confirmMarkAsEnCamino}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg font-bold shadow-lg transition-all"
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg font-bold shadow-lg transition-all"
                   >
-                    Sí, Completar
+                    Confirmar Traslado
                   </button>
                 </div>
               </div>
@@ -359,6 +427,87 @@ const Orders = () => {
             `}</style>
           </div>
         </Portal>
+      )}
+      
+      {/* Modal Reagendar */}
+      {rescheduleOrder && (
+          <Portal>
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-scale-in">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                      <RefreshCcw className="text-amber-500" />
+                      Reagendar Pedido
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                      Selecciona una nueva fecha para el pedido de <strong>{rescheduleOrder.cliente_nombre}</strong>.
+                  </p>
+                  
+                  <div className="mb-6">
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Nueva Fecha de Entrega</label>
+                      <input 
+                        type="date" 
+                        value={newDate}
+                        onChange={(e) => setNewDate(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                      />
+                  </div>
+
+                  <div className="flex gap-3">
+                      <button 
+                        onClick={() => setRescheduleOrder(null)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50"
+                      >
+                          Cancelar
+                      </button>
+                      <button 
+                        onClick={handleRescheduleSubmit}
+                        className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-bold shadow-md"
+                      >
+                          Guardar
+                      </button>
+                  </div>
+              </div>
+            </div>
+          </Portal>
+      )}
+
+      {/* Modal Confirmación de Éxito */}
+      {successOrderId && (
+          <Portal>
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-scale-in">
+                  <div className="text-center mb-6">
+                      <div className="bg-green-100 p-3 rounded-full inline-flex items-center justify-center mb-4">
+                          <CheckCircle size={40} className="text-green-600" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-800">¡Pedido Exitoso!</h3>
+                      <p className="text-gray-500 mt-2">El pedido se marcará como entregado y saldrá de la lista.</p>
+                  </div>
+
+                  <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 mb-6 text-center">
+                      <p className="text-red-700 font-extrabold text-lg uppercase">
+                          ¡Recuerda registrar<br/>la venta!
+                      </p>
+                      <p className="text-xs text-red-500 mt-1">Este paso NO registra la venta automáticamente en contabilidad.</p>
+                  </div>
+
+                  <div className="flex gap-3">
+                      <button 
+                        onClick={() => setSuccessOrderId(null)}
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 bg-white"
+                      >
+                          Cancelar
+                      </button>
+                      <button 
+                        onClick={confirmOrderSuccess}
+                        className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg font-bold shadow-lg transition-transform active:scale-95"
+                      >
+                          Confirmar y Cerrar
+                      </button>
+                  </div>
+              </div>
+            </div>
+          </Portal>
       )}
 
       {/* Modal Nuevo Pedido */}

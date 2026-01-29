@@ -109,6 +109,7 @@ export const getProfitMarginByCategory = (params) => api.get('/analytics/profit-
 // ========== PEDIDOS / ENCARGOS ==========
 export const getOrders = (params) => api.get('/orders', { params });
 export const createOrder = (data) => api.post('/orders', data);
+export const updateOrder = (id, data) => api.put(`/orders/${id}`, data);
 export const updateOrderStatus = (id, status) => api.put(`/orders/${id}/status`, { estado: status });
 export const deleteOrder = (id) => api.delete(`/orders/${id}`);
 // Dashboard stats for pending orders

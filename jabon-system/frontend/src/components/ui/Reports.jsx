@@ -82,21 +82,31 @@ const Reports = () => {
   const downloadReport = () => {
     if (!reportData || reportData.length === 0) return;
 
+    // Función auxiliar para formatear moneda en CSV (evita problemas con comas)
+    const formatCurrencyForCSV = (value) => {
+      const formatted = Number(value).toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2
+      });
+      return `"${formatted}"`; // Entrecomillar para respetar el formato en CSV
+    };
+
     let csvContent = '';
 
     if (reportType === 'ventas') {
       csvContent = 'ID,Fecha,Cliente,Total,Ganancia\n';
       reportData.forEach(sale => {
-        csvContent += `${sale.id},${sale.fecha},${sale.cliente_nombre || 'Sin cliente'},${sale.total},${sale.ganancia}\n`;
+        csvContent += `${sale.id},${sale.fecha},${sale.cliente_nombre || 'Sin cliente'},${formatCurrencyForCSV(sale.total)},${formatCurrencyForCSV(sale.ganancia)}\n`;
       });
     } else if (reportType === 'ganancias') {
       csvContent = 'Fecha,Número de Ventas,Total Ventas,Ganancia Total\n';
       reportData.forEach(row => {
-        csvContent += `${row.fecha},${row.num_ventas},${row.total_ventas},${row.ganancia_total}\n`;
+        csvContent += `${row.fecha},${row.num_ventas},${formatCurrencyForCSV(row.total_ventas)},${formatCurrencyForCSV(row.ganancia_total)}\n`;
       });
     }
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

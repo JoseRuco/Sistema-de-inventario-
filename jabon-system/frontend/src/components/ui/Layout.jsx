@@ -20,6 +20,15 @@ import InstallPWA from "./InstallPWA";
 
 const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    if (window.innerWidth >= 1024) {
+      setDesktopSidebarOpen(!desktopSidebarOpen);
+    } else {
+      setSidebarOpen(true);
+    }
+  };
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -38,7 +47,9 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex lg:flex-col w-64 bg-white border-r border-gray-200 shadow-sm">
+      <aside 
+        className={`hidden ${desktopSidebarOpen ? 'lg:flex' : 'lg:hidden'} lg:flex-col w-64 bg-white border-r border-gray-200 shadow-sm transition-all duration-300`}
+      >
         <div className="p-0 border-b border-gray-200">
           <div className="inline-flex w-25 h-30 just">
             <img
@@ -142,8 +153,9 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
           <div className="px-4 py-4 lg:px-8">
             <div className="flex items-center justify-between">
               <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+                onClick={toggleSidebar}
+                className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                title={desktopSidebarOpen ? "Ocultar menú" : "Mostrar menú"}
               >
                 <Menu size={24} />
               </button>

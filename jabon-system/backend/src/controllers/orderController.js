@@ -113,7 +113,7 @@ exports.updateOrderStatus = (req, res) => {
     const { id } = req.params;
     const { estado } = req.body; // 'en_camino', 'entregado', 'cancelado'
 
-    if (!['pendiente', 'en_camino', 'entregado', 'cancelado'].includes(estado)) {
+    if (!['pendiente', 'en_camino', 'en_traslado', 'entregado', 'cancelado'].includes(estado)) {
       return res.status(400).json({ success: false, error: 'Estado inválido' });
     }
 
@@ -125,6 +125,48 @@ exports.updateOrderStatus = (req, res) => {
     }
 
     res.json({ success: true, message: `Pedido actualizado a ${estado}` });
+
+  } catch (error) {
+    console.error('Error actualizando pedido:', error);
+    res.status(500).json({ success: false, error: 'Error al actualizar el pedido' });
+  }
+};
+
+// Actualizar detalles del pedido (para re-agendar)
+exports.updateOrder = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fecha_entrega, estado } = req.body;
+
+    // Construir query dinámica
+    let query = 'UPDATE pedidos SET ';
+    const params = [];
+    const sets = [];
+
+    if (fecha_entrega) {
+      sets.push('fecha_entrega = ?');
+      params.push(fecha_entrega);
+    }
+
+    if (estado) {
+      sets.push('estado = ?');
+      params.push(estado);
+    }
+
+    if (sets.length === 0) {
+       return res.status(400).json({ success: false, error: 'No hay datos para actualizar' });
+    }
+
+    query += sets.join(', ') + ' WHERE id = ?';
+    params.push(id);
+
+    const result = db.prepare(query).run(...params);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ success: false, error: 'Pedido no encontrado' });
+    }
+
+    res.json({ success: true, message: 'Pedido actualizado exitosamente' });
 
   } catch (error) {
     console.error('Error actualizando pedido:', error);
