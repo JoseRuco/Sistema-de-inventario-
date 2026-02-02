@@ -82,7 +82,6 @@ const getDashboardStats = (req, res) => {
       FROM productos
       WHERE stock < 10 AND activo = 1
       ORDER BY stock ASC
-      LIMIT 5
     `).all();
 
     // Ventas recientes (últimas 5)

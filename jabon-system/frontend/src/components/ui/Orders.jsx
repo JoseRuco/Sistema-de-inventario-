@@ -66,8 +66,19 @@ const Orders = () => {
   // --- Order Creation Logic ---
 
   const handleAddToCart = (product) => {
+    // Validación inicial de stock
+    if (product.stock <= 0) {
+      showNotification('warning', 'Sin Stock', 'No hay unidades disponibles de este producto');
+      return;
+    }
+
     const existing = cart.find(item => item.producto_id === product.id);
     if (existing) {
+      // Validación al incrementar
+      if (existing.cantidad >= product.stock) {
+        showNotification('warning', 'Stock Limitado', `Solo quedan ${product.stock} unidades disponibles`);
+        return;
+      }
       setCart(cart.map(item => 
         item.producto_id === product.id ? { ...item, cantidad: item.cantidad + 1 } : item
       ));
@@ -84,6 +95,15 @@ const Orders = () => {
 
   const updateCartQuantity = (productId, newQty) => {
     if (newQty < 1) return;
+
+    const item = cart.find(i => i.producto_id === productId);
+    
+    // Validar stock máximo
+    if (item && newQty > item.stock_actual) {
+        showNotification('warning', 'Stock Máximo', `Solo hay ${item.stock_actual} unidades en inventario`);
+        return;
+    }
+
     setCart(cart.map(item => 
       item.producto_id === productId ? { ...item, cantidad: newQty } : item
     ));
@@ -409,7 +429,7 @@ const Orders = () => {
               </div>
             </div>
 
-            <style jsx>{`
+            <style>{`
               @keyframes scale-in {
                 from {
                   opacity: 0;
@@ -674,7 +694,14 @@ const Orders = () => {
                                </div>
                                <button 
                                  onClick={() => handleAddToCart(product)}
-                                 className={`p-2 rounded-full transition-colors shrink-0 ${inCart ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600'}`}
+                                 disabled={product.stock <= 0}
+                                 className={`p-2 rounded-full transition-colors shrink-0 ${
+                                   inCart 
+                                     ? 'bg-blue-600 text-white' 
+                                     : product.stock <= 0 
+                                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                       : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600'
+                                 }`}
                                >
                                  <Plus size={18} />
                                </button>

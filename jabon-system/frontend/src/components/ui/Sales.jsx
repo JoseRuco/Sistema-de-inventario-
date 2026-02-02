@@ -1095,7 +1095,7 @@ const Sales = () => {
 
 
       {/* Estilos para animaciones */}
-      <style jsx>{`
+      <style>{`
         @keyframes add-to-cart {
           0% {
             transform: scale(1);

@@ -317,12 +317,13 @@ function Products() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     >
                       <option value="loza">Loza</option>
-                      <option value="ropa">Ropa</option>
-                      <option value="suavisante">Suavisante</option>
-                      <option value="ambientador">Ambientador</option>
-                      <option value="limpido">Limpido</option>
+                      <option value="detergente">Detergente</option>
                       <option value="desengrasante">Desengrasante</option>
-                      <option value="cosmetico">Cosmetico</option>
+                      <option value="ambientador">Ambientador</option>
+                      <option value="soflan">Soflan</option>
+                      <option value="limpido">Limpido</option> 
+                      <option value="jabon cosmetico">Jabon Cosmetico</option>
+                      <option value="shampoo vehiculos">Shampoo Vehiculos</option>
                     </select>
                   </div>
 
@@ -339,6 +340,9 @@ function Products() {
                       <option value="medio galon">Medio Galón</option>
                       <option value="litro">Litro</option>
                       <option value="poma">Poma</option>
+                      <option value="litro">Spray 100ml</option>
+                      <option value="litro">Spray 500ml</option>
+                      
                     </select>
                   </div>
 
