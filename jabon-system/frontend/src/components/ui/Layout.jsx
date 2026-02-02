@@ -54,7 +54,7 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
           <div className="inline-flex w-25 h-30 just">
             <img
               draggable="false"
-              src="src/components/ui/img/programmer-SINFONDO.png"
+              src="/img/Programmer-SINFONDO.png"
               alt=""
             />
           </div>
@@ -102,7 +102,7 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
               <div className="inline-flex w-25 h-50 ">
                 <img
                   draggable="false"
-                  src="src/components/ui/img/Programmer-SINFONDO.png"
+                  src="/img/Programmer-SINFONDO.png"
                   alt=""
                 />
               </div>
