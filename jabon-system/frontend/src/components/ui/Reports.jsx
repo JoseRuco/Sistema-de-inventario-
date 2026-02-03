@@ -2,29 +2,30 @@ import { useState } from 'react';
 import { FileText, Download, TrendingUp, Package, AlertCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { getReports, getTopProducts } from '../../services/api';
+import { getColombiaDate, getColombiaDateObject } from '../../utils/dateUtils';
 
 const Reports = () => {
   // Obtener fecha actual en Colombia
-  const getColombiaDate = () => {
-    const now = new Date();
-    const colombiaTime = now.toLocaleString('en-US', { timeZone: 'America/Bogota' });
-    const colombiaDate = new Date(colombiaTime);
-    return colombiaDate.toISOString().split('T')[0];
+  // Obtener fecha actual en Colombia (YYYY-MM-DD)
+  const getTodayColombia = () => {
+    return getColombiaDate();
   };
 
-  // Obtener primer día del mes en Colombia
+  // Obtener primer día del mes en Colombia (YYYY-MM-DD)
   const getFirstDayOfMonth = () => {
-    const now = new Date();
-    const colombiaTime = now.toLocaleString('en-US', { timeZone: 'America/Bogota' });
-    const colombiaDate = new Date(colombiaTime);
+    const colombiaDate = getColombiaDateObject();
     const firstDay = new Date(colombiaDate.getFullYear(), colombiaDate.getMonth(), 1);
-    return firstDay.toISOString().split('T')[0];
+    
+    const year = firstDay.getFullYear();
+    const month = String(firstDay.getMonth() + 1).padStart(2, '0');
+    const day = String(firstDay.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const [reportType, setReportType] = useState('ventas');
   const [dateRange, setDateRange] = useState({
     fecha_inicio: getFirstDayOfMonth(),
-    fecha_fin: getColombiaDate()
+    fecha_fin: getTodayColombia()
   });
   const [reportData, setReportData] = useState(null);
   const [reportTotals, setReportTotals] = useState(null);

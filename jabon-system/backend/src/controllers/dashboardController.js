@@ -1,20 +1,15 @@
 const db = require('../config/database');
 
+const { getColombiaDate, getColombiaYearMonth } = require('../utils/dateHelper');
+
 // Función para obtener la fecha actual local (sin hora)
 const getLocalDate = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return getColombiaDate();
 };
 
 // Función para obtener año-mes actual local
 const getLocalYearMonth = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  return `${year}-${month}`;
+  return getColombiaYearMonth();
 };
 
 // ✅ Generar array de fechas entre dos fechas (INCLUYE TODOS LOS DÍAS)
@@ -138,20 +133,17 @@ const getDashboardStats = (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 const getChartData = (req, res) => {
   try {
-    const fechaHoy = getLocalDate();
+    const fechaHoy = getColombiaDate();
 
     // 1. Para el Gráfico: ÚLTIMOS 30 DÍAS (ventana móvil)
-    const fechaInicioChart = new Date();
+    const fechaInicioChart = new Date(getColombiaDateTime());
     fechaInicioChart.setDate(fechaInicioChart.getDate() - 29);
     const fechaInicioChartStr = fechaInicioChart.toISOString().split('T')[0];
 
     // 2. Para Top Productos: DESDE EL 1 DEL MES ACTUAL (se reinicia)
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const [year, month] = fechaHoy.split('-');
     const fechaInicioMesStr = `${year}-${month}-01`;
 
     console.log('📊 Generando charts:', {
@@ -438,15 +430,7 @@ const getTopProductsByDateRange = (req, res) => {
 
 const getSalesByTypeThisMonth = (req, res) => {
   try {
-    const getLocalDate = () => {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-
-    const fechaHoy = getLocalDate();
+    const fechaHoy = getColombiaDate();
     const [year, month] = fechaHoy.split('-');
     const fechaInicioStr = `${year}-${month}-01`;
 

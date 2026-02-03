@@ -23,4 +23,19 @@ const getColombiaDateTime = () => {
     return `${year}-${month}-${day} ${timePart}`;
 };
 
-module.exports = { getColombiaDateTime };
+// Obtener solo la fecha YYYY-MM-DD
+const getColombiaDate = () => {
+    return getColombiaDateTime().split(' ')[0];
+};
+
+// Obtener solo el año y mes YYYY-MM
+const getColombiaYearMonth = () => {
+    const date = getColombiaDate();
+    return date.substring(0, 7);
+};
+
+module.exports = { 
+    getColombiaDateTime,
+    getColombiaDate,
+    getColombiaYearMonth
+};

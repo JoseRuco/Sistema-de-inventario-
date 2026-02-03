@@ -16,6 +16,7 @@ import {
   Truck
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
+import { getColombiaDateObject } from "../../utils/dateUtils";
 
 
 const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
@@ -163,8 +164,8 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
                 {menuItems.find((item) => item.id === currentView)?.label}
               </h2>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600">
-                  {new Date().toLocaleDateString("es-CO", {
+                <span className="text-sm text-gray-600 capitalize">
+                  {getColombiaDateObject().toLocaleDateString("es-CO", {
                     weekday: "long",
                     year: "numeric",
                     month: "long",
