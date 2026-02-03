@@ -1,6 +1,6 @@
 const db = require('../config/database');
 
-const { getColombiaDate, getColombiaYearMonth } = require('../utils/dateHelper');
+const { getColombiaDate, getColombiaYearMonth, getColombiaDateTime } = require('../utils/dateHelper');
 
 // Función para obtener la fecha actual local (sin hora)
 const getLocalDate = () => {
