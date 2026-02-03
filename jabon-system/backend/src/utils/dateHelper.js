@@ -1,10 +1,5 @@
-// Helper para obtener fecha/hora local de Colombia (UTC-5)
 const getColombiaDateTime = () => {
-    // Obtener la hora actual en la zona horaria de Colombia
-    const now = new Date();
-
-    // Usar toLocaleString con la zona horaria de Colombia
-    const colombiaTimeString = now.toLocaleString('en-US', {
+    const formatter = new Intl.DateTimeFormat('en-US', {
         timeZone: 'America/Bogota',
         year: 'numeric',
         month: '2-digit',
@@ -15,23 +10,22 @@ const getColombiaDateTime = () => {
         hour12: false
     });
 
-    // Parsear el resultado (formato: MM/DD/YYYY, HH:MM:SS)
-    const [datePart, timePart] = colombiaTimeString.split(', ');
-    const [month, day, year] = datePart.split('/');
+    const parts = formatter.formatToParts(new Date());
+    const p = parts.reduce((acc, part) => {
+        acc[part.type] = part.value;
+        return acc;
+    }, {});
 
-    // Formato: YYYY-MM-DD HH:MM:SS
-    return `${year}-${month}-${day} ${timePart}`;
+    // Retorna formato ISO-like: YYYY-MM-DDTHH:MM:SS (con T para mejor compatibilidad con new Date())
+    return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}`;
 };
 
-// Obtener solo la fecha YYYY-MM-DD
 const getColombiaDate = () => {
-    return getColombiaDateTime().split(' ')[0];
+    return getColombiaDateTime().split('T')[0];
 };
 
-// Obtener solo el año y mes YYYY-MM
 const getColombiaYearMonth = () => {
-    const date = getColombiaDate();
-    return date.substring(0, 7);
+    return getColombiaDate().substring(0, 7);
 };
 
 module.exports = { 

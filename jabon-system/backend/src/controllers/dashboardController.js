@@ -138,9 +138,10 @@ const getChartData = (req, res) => {
     const fechaHoy = getColombiaDate();
 
     // 1. Para el Gráfico: ÚLTIMOS 30 DÍAS (ventana móvil)
-    const fechaInicioChart = new Date(getColombiaDateTime());
-    fechaInicioChart.setDate(fechaInicioChart.getDate() - 29);
-    const fechaInicioChartStr = fechaInicioChart.toISOString().split('T')[0];
+    // Usamos el mediodía para evitar problemas de cambio de día al restar
+    const dateObj = new Date(fechaHoy + 'T12:00:00');
+    dateObj.setDate(dateObj.getDate() - 29);
+    const fechaInicioChartStr = dateObj.toISOString().split('T')[0];
 
     // 2. Para Top Productos: DESDE EL 1 DEL MES ACTUAL (se reinicia)
     const [year, month] = fechaHoy.split('-');
