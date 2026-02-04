@@ -24,6 +24,7 @@ import SuccessModal from "./SuccessModal";
 import ClientFormModal from "./ClientFormModal";
 import SaleConfirmationModal from "./SaleConfirmationModal";
 import ProductInfoModal from './ProductInfoModal';
+import AddProductModal from './AddProductModal';
 
 const Sales = () => {
   const [products, setProducts] = useState([]);
@@ -70,6 +71,9 @@ const Sales = () => {
 
   // Estado para modal de información del producto
   const [productInfoModal, setProductInfoModal] = useState({ isOpen: false, product: null });
+
+  // Estado para modal de agregar producto
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -147,7 +151,7 @@ const Sales = () => {
         {
           producto_id: product.id,
           nombre: product.nombre,
-          tipo: product.tipo,
+          aroma: product.aroma,
           presentacion: product.presentacion,
           precio_unitario: product.precio_venta,
           cantidad: 1,
@@ -365,19 +369,22 @@ const Sales = () => {
     }
   };
 
-  // Filtrar productos basado en búsqueda
+  // Filtrar y ordenar productos
   const filteredProducts = products
-    .filter(
-      (product) =>
-        product.nombre.toLowerCase().includes(productSearch.toLowerCase()) ||
-        product.tipo.toLowerCase().includes(productSearch.toLowerCase()) ||
-        product.presentacion.toLowerCase().includes(productSearch.toLowerCase()),
-    )
-    // Ordenar por categoría primero, luego por nombre
+    .filter((product) => {
+      const searchLower = productSearch.toLowerCase();
+      return (
+        product.nombre.toLowerCase().includes(searchLower) ||
+        product.aroma?.toLowerCase().includes(searchLower) ||
+        product.presentacion.toLowerCase().includes(searchLower)
+      );
+    })
     .sort((a, b) => {
-      // Primero ordenar por tipo/categoría
-      const categoryComparison = a.tipo.localeCompare(b.tipo);
-      if (categoryComparison !== 0) return categoryComparison;
+      // Primero ordenar por aroma (con verificación de undefined)
+      const aromaA = a.aroma || '';
+      const aromaB = b.aroma || '';
+      const aromaComparison = aromaA.localeCompare(aromaB);
+      if (aromaComparison !== 0) return aromaComparison;
       
       // Si son de la misma categoría, ordenar por nombre
       return a.nombre.localeCompare(b.nombre);
@@ -467,166 +474,17 @@ const Sales = () => {
   return (
     <div className="p-2 sm:p-4 md:p-6 h-screen flex flex-col overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6 h-full overflow-hidden">
-        {/* Panel de Productos */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-lg flex flex-col overflow-hidden ">
-          <div className="p-3 md:p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-3">
-            <div className="flex items-center gap-3">
-              <h2 className="text-lg md:text-xl font-bold text-gray-800">Productos Disponibles</h2>
-              <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'producto' : 'productos'}
-              </span>
-            </div>
-
-            {/* Buscador de Productos */}
-            <div className="relative w-full md:w-80">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              <input
-                type="text"
-                value={productSearch}
-                onChange={(e) => setProductSearch(e.target.value)}
-                placeholder="Buscar por nombre, categoría o presentación..."
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all"
-              />
-              {productSearch && (
-                <button
-                  onClick={() => setProductSearch('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-all"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-2 md:p-4">
-            {filteredProducts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-60">
-                <Search size={48} className="mb-2" />
-                <p>No se encontraron productos</p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {/* Header de la tabla - solo en desktop */}
-                <div className="hidden md:grid md:grid-cols-12 gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold text-xs rounded-lg sticky top-0 z-10 shadow-md">
-                  <div className="col-span-3">Producto</div>
-                  <div className="col-span-2">Categoría</div>
-                  <div className="col-span-2">Presentación</div>
-                  <div className="col-span-2 text-right">Precio</div>
-                  <div className="col-span-2 text-center">Stock</div>
-                  <div className="col-span-1 text-center">Agregar</div>
-                </div>
-
-                {/* Lista de productos */}
-                {filteredProducts.map((product, index) => {
-                  // Determinar si este producto es el primero de una nueva categoría
-                  const isFirstInCategory = index === 0 || filteredProducts[index - 1].tipo !== product.tipo;
-                  
-                  return (
-                    <div key={product.id}>
-                      {/* Separador de Categoría */}
-                      {isFirstInCategory && (
-                        <div className="sticky top-8 md:top-10 z-[9] mt-3 mb-2 first:mt-0">
-                          <div className=" bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-1  my-5 rounded-lg shadow-lg flex items-center gap-2">
-                            <div className="w-1 h-6 bg-white rounded-full"></div>
-                            <h3 className="font-bold text-sm md:text-base uppercase tracking-wide">
-                              {product.tipo}
-                            </h3>
-                            <div className="ml-auto bg-white/20 px-2 py-0.5 rounded-full text-xs">
-                              {filteredProducts.filter(p => p.tipo === product.tipo).length} productos
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Producto */}
-                      <div
-                        className={`grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-2 p-3 rounded-lg transition-all duration-200 border
-                          ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}
-                          hover:bg-blue-50 hover:shadow-md hover:border-blue-300 hover:scale-[1.01]
-                          ${product.stock < 1 ? "opacity-60" : ""}
-                        `}
-                      >
-                        {/* Producto - Mobile: título principal, Desktop: columna */}
-                        <div className="md:col-span-3 flex items-center gap-2">
-                          {/* Botón de Información */}
-                          <button
-                            onClick={() => handleShowProductInfo(product)}
-                            className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 hover:bg-indigo-200 active:scale-95 transition-all"
-                            title="Ver información del producto"
-                          >
-                            <Info size={16} />
-                          </button>
-                          
-                          <h3 className="font-semibold text-sm text-gray-800 line-clamp-2 md:line-clamp-1">
-                            {product.nombre}
-                          </h3>
-                        </div>
-
-                        {/* Categoría */}
-                        <div className="md:col-span-2 flex items-center">
-                          <span className="text-xs text-gray-600 md:text-sm">
-                            <span className="md:hidden font-medium text-gray-500">
-                              Categoría:{" "}
-                            </span>
-                            {product.tipo}
-                          </span>
-                        </div>
-
-                        {/* Presentación */}
-                        <div className="md:col-span-2 flex items-center">
-                          <span className="inline-flex items-center bg-blue-100 text-blue-800 ml-5 pl-2 pr-2 py-1 rounded-md text-xs font-medium">
-                            {product.presentacion}
-                          </span>
-                        </div>
-
-                        {/* Precio */}
-                        <div className="md:col-span-2 flex items-center md:justify-end">
-                          <span className="text-base md:text-lg font-bold text-green-600">
-                            ${product.precio_venta.toLocaleString()}
-                          </span>
-                        </div>
-
-                        {/* Stock */}
-                        <div className="md:col-span-2 flex items-center md:justify-center">
-                          <span
-                            className={`text-xs px-3 py-1.5 rounded-full font-semibold whitespace-nowrap inline-flex items-center gap-1 ${
-                              product.stock > 10
-                                ? "bg-green-100 text-green-800 border border-green-300"
-                                : product.stock > 0
-                                  ? "bg-yellow-100 text-yellow-800 border border-yellow-300"
-                                  : "bg-red-100 text-red-800 border border-red-300"
-                            }`}
-                          >
-                            <span className="md:hidden">Stock: </span>
-                            {product.stock}
-                            <span className="hidden md:inline">unid.</span>
-                          </span>
-                        </div>
-
-                        {/* Botón Agregar */}
-                        <div className="md:col-span-1 flex items-center md:justify-center mt-2 md:mt-0">
-                          <button
-                            onClick={() => addToCart(product)}
-                            disabled={product.stock < 1}
-                            className={`w-full md:w-auto bg-blue-500 text-white px-4 py-2 md:p-2 rounded-lg hover:bg-blue-600 active:scale-95 transition-all flex items-center justify-center gap-2 font-medium text-sm shadow-md
-                              ${product.stock < 1 ? "opacity-50 cursor-not-allowed bg-gray-400 hover:bg-gray-400" : ""}
-                              ${animatingProduct === product.id ? "animate-add-to-cart" : ""}
-                            `}
-                            title={
-                              product.stock < 1
-                                ? "Sin stock disponible"
-                                : "Agregar al carrito"
-                            }
-                          >
-                            <Plus size={18} className="flex-shrink-0" />
-                            <span className="md:hidden">Agregar</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+        {/* Panel de Productos - SOLO BOTÓN */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-lg flex flex-col overflow-hidden">
+          {/* Contenido Central - Solo Botón */}
+          <div className="flex-1 flex items-center justify-center p-4">
+            <button
+              onClick={() => setShowAddProductModal(true)}
+              className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-4 md:px-8 md:py-5 rounded-xl hover:from-blue-600 hover:to-indigo-700 active:scale-95 transition-all font-bold text-base md:text-lg shadow-xl hover:shadow-2xl w-full md:w-auto justify-center"
+            >
+              <Plus size={28} />
+              AGREGAR PRODUCTO
+            </button>
           </div>
         </div>
 
@@ -897,11 +755,19 @@ const Sales = () => {
                     >
                       <div className="flex justify-between items-start mb-1">
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-xs truncate">
+                          <h3 className="font-semibold text-sm text-gray-900 truncate">
                             {item.nombre}
-                          </p>
-                          <p className="text-xs text-gray-500 truncate">
-                            {item.tipo} - {item.presentacion}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">
+                              {item.aroma}
+                            </span>
+                            <span className="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-medium">
+                              {item.presentacion}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            ${item.precio_unitario.toLocaleString()} c/u
                           </p>
                         </div>
                         <button
@@ -1093,6 +959,16 @@ const Sales = () => {
         onClose={() => setProductInfoModal({ isOpen: false, product: null })}
       />
 
+      {/* Modal de Agregar Producto */}
+      <AddProductModal
+        isOpen={showAddProductModal}
+        onClose={() => setShowAddProductModal(false)}
+        products={products}
+        onAddToCart={(product) => {
+          addToCart(product);
+          setShowAddProductModal(false);
+        }}
+      />
 
       {/* Estilos para animaciones */}
       <style>{`

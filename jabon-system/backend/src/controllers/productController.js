@@ -29,14 +29,14 @@ const getProductById = (req, res) => {
 // Crear nuevo producto
 const createProduct = (req, res) => {
   try {
-    const { nombre, tipo, presentacion, precio_costo, precio_venta, stock } = req.body;
+    const { nombre, aroma, presentacion, precio_costo, precio_venta, stock } = req.body;
 
     const stmt = db.prepare(`
-      INSERT INTO productos (nombre, tipo, presentacion, precio_costo, precio_venta, stock, activo)
+      INSERT INTO productos (nombre, aroma, presentacion, precio_costo, precio_venta, stock, activo)
       VALUES (?, ?, ?, ?, ?, ?, 1)
     `);
 
-    const result = stmt.run(nombre, tipo, presentacion, precio_costo, precio_venta, stock || 0);
+    const result = stmt.run(nombre, aroma, presentacion, precio_costo, precio_venta, stock || 0);
 
     // Registrar el stock inicial si es mayor a 0
     if (stock && stock > 0) {
@@ -81,7 +81,7 @@ const updateProduct = (req, res) => {
     // Fusionar datos actuales con las actualizaciones
     const updatedData = {
       nombre: updates.nombre !== undefined ? updates.nombre : currentProduct.nombre,
-      tipo: updates.tipo !== undefined ? updates.tipo : currentProduct.tipo,
+      aroma: updates.aroma !== undefined ? updates.aroma : currentProduct.aroma,
       presentacion: updates.presentacion !== undefined ? updates.presentacion : currentProduct.presentacion,
       precio_costo: updates.precio_costo !== undefined ? updates.precio_costo : currentProduct.precio_costo,
       precio_venta: updates.precio_venta !== undefined ? updates.precio_venta : currentProduct.precio_venta,
@@ -91,13 +91,13 @@ const updateProduct = (req, res) => {
     // Actualizar el producto
     const stmt = db.prepare(`
       UPDATE productos 
-      SET nombre = ?, tipo = ?, presentacion = ?, precio_costo = ?, precio_venta = ?, stock = ?
+      SET nombre = ?, aroma = ?, presentacion = ?, precio_costo = ?, precio_venta = ?, stock = ?
       WHERE id = ?
     `);
 
     stmt.run(
       updatedData.nombre,
-      updatedData.tipo,
+      updatedData.aroma,
       updatedData.presentacion,
       updatedData.precio_costo,
       updatedData.precio_venta,

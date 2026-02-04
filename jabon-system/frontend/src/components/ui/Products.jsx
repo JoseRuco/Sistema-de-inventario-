@@ -21,7 +21,7 @@ function Products() {
 
   const [formData, setFormData] = useState({
     nombre: '',
-    tipo: 'loza',
+    aroma: 'limón',
     presentacion: 'galon',
     precio_costo: '',
     precio_venta: '',
@@ -69,7 +69,7 @@ function Products() {
       setEditingProduct(null);
       setFormData({
         nombre: '',
-        tipo: 'loza',
+        aroma: 'limón',
         presentacion: 'galon',
         precio_costo: '',
         precio_venta: '',
@@ -92,7 +92,7 @@ function Products() {
     setEditingProduct(product);
     setFormData({
       nombre: product.nombre,
-      tipo: product.tipo,
+      aroma: product.aroma,
       presentacion: product.presentacion,
       precio_costo: product.precio_costo,
       precio_venta: product.precio_venta,
@@ -216,7 +216,7 @@ function Products() {
 
   const filteredProducts = products.filter(product =>
     product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.tipo.toLowerCase().includes(searchTerm.toLowerCase())
+    product.aroma.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -253,7 +253,7 @@ function Products() {
               setEditingProduct(null);
               setFormData({
                 nombre: '',
-                tipo: 'loza',
+                aroma: 'limón',
                 presentacion: 'galon',
                 precio_costo: '',
                 precio_venta: '',
@@ -297,33 +297,48 @@ function Products() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Nombre del Producto
                     </label>
-                    <input
-                      type="text"
-                      required
+                    <select
                       value={formData.nombre}
                       onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                      placeholder='Nombre'
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tipo
-                    </label>
-                    <select
-                      value={formData.tipo}
-                      onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent capitalize"
+                      required
                     >
-                      <option value="loza">Loza</option>
+                      <option value="">-- Selecciona un producto --</option>
+                      <option value="lava loza">Lava Loza</option>
                       <option value="detergente">Detergente</option>
                       <option value="desengrasante">Desengrasante</option>
                       <option value="ambientador">Ambientador</option>
                       <option value="soflan">Soflan</option>
-                      <option value="limpido">Limpido</option> 
+                      <option value="limpido">Limpido</option>
                       <option value="jabon cosmetico">Jabon Cosmetico</option>
                       <option value="shampoo vehiculos">Shampoo Vehiculos</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Aroma
+                    </label>
+                    <select
+                      value={formData.aroma}
+                      onChange={(e) => setFormData({ ...formData, aroma: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                      <option value="limón">Limón</option>
+                      <option value="naranja">Naranja piña</option>
+                      <option value="manzana">Manzana Verde</option>
+                      <option value="palmolive">Palmolive</option>
+                      <option value="floral">Floral</option>
+                      <option value="citronela">Citronela</option>
+                      <option value="canela">Canela</option>
+                      <option value="lavanda">Lavanda</option>
+                      <option value="musk">Musk</option>
+                      <option value="sandalo">Sandalo</option>
+                      <option value="vainilla">Vainilla</option>
+                      <option value="suavitel">Suavitel</option>
+                      <option value="frutos rojos">Frutos Rojos</option>
+                      <option value="talco bb">Talco BB</option>
+                      <option value="ninguno">Ninguno</option>
                     </select>
                   </div>
 
@@ -427,7 +442,7 @@ function Products() {
                   Nombre
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tipo
+                  Aroma
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Presentación
@@ -456,7 +471,7 @@ function Products() {
                     {product.nombre}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">
-                    {product.tipo}
+                    {product.aroma}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
@@ -562,8 +577,8 @@ function Products() {
                 <h3 className="font-semibold text-gray-900 mb-2">{stockModal.product?.nombre}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-600">Tipo:</p>
-                    <p className="font-medium text-gray-900 capitalize">{stockModal.product?.tipo}</p>
+                    <p className="text-gray-600">Aroma:</p>
+                    <p className="font-medium text-gray-900 capitalize">{stockModal.product?.aroma}</p>
                   </div>
                   <div>
                     <p className="text-gray-600">Presentación:</p>

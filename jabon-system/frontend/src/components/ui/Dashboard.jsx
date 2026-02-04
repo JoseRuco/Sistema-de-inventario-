@@ -40,17 +40,17 @@ const Dashboard = () => {
     }
   };
 
-  // Calcular ventas del mes por tipo
+  // Calcular ventas del mes por aroma
   const getSalesByTypeThisMonth = () => {
     if (!charts?.topProducts) return [];
 
     const typeMap = {};
     charts.topProducts.forEach(product => {
-      const tipo = product.tipo || 'Sin tipo';
-      if (!typeMap[tipo]) {
-        typeMap[tipo] = 0;
+      const aroma = product.aroma || 'Sin aroma';
+      if (!typeMap[aroma]) {
+        typeMap[aroma] = 0;
       }
-      typeMap[tipo] += product.cantidad_vendida;
+      typeMap[aroma] += product.cantidad_vendida;
     });
 
     return Object.entries(typeMap).map(([name, cantidad]) => ({
@@ -295,20 +295,20 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* Ventas por Tipo de Producto */}
+          {/* Ventas por Aroma de Producto */}
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
                 <div className="bg-green-100 rounded-lg p-2">
                   <ShoppingCart className="text-green-600" size={18} />
                 </div>
-                Ventas por Tipo de Producto
+                Ventas por Aroma de Producto
               </h3>
             </div>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={salesByType}>
                 <CartesianGrid strokeDasharray="3 3" stroke="gray" />
-                <XAxis dataKey="tipo" tick={{ fill: '#666' }} />
+                <XAxis dataKey="aroma" tick={{ fill: '#666' }} />
                 <YAxis tick={{ fill: '#666' }} />
                 <Tooltip />
                 <Bar dataKey="cantidad_vendida" fill="#3b82f6" name="Cantidad" />
@@ -379,7 +379,7 @@ const Dashboard = () => {
                       <div>
                         <p className="text-sm font-semibold text-gray-900">{product.nombre}</p>
                         <p className="text-xs text-gray-600 mt-0.5">
-                          {product.tipo} • {product.presentacion}
+                          {product.aroma} • {product.presentacion}
                         </p>
                       </div>
                     </div>
@@ -415,7 +415,7 @@ const Dashboard = () => {
                 <tr className="border-b-2 border-gray-200 bg-gray-50">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">#</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Producto</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Tipo</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Aroma</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Presentación</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600">Cantidad</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600">Total Vendido</th>
@@ -440,7 +440,7 @@ const Dashboard = () => {
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-block  text-gray-700 px-2 py-1  text-xs font-medium">
-                        {product.tipo}
+                        {product.aroma}
                       </span>
                     </td>
                     <td className="px-4 py-3">

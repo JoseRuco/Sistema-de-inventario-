@@ -73,7 +73,7 @@ const getDashboardStats = (req, res) => {
 
     // Productos con bajo stock (menos de 10 unidades) - SOLO ACTIVOS
     const lowStock = db.prepare(`
-      SELECT id, nombre, tipo, presentacion, stock
+      SELECT id, nombre, aroma, presentacion, stock
       FROM productos
       WHERE stock < 10 AND activo = 1
       ORDER BY stock ASC
@@ -182,7 +182,7 @@ const getChartData = (req, res) => {
     const topProducts = db.prepare(`
       SELECT 
         p.nombre,
-        p.tipo,
+        p.aroma,
         p.presentacion,
         COALESCE(SUM(vd.cantidad), 0) as cantidad_vendida,
         COALESCE(SUM(vd.subtotal * (CAST(vd.v_total AS REAL) / (vd.v_total + vd.v_descuento))), 0) as total_vendido
@@ -400,7 +400,7 @@ const getTopProductsByDateRange = (req, res) => {
       SELECT 
         p.id,
         p.nombre,
-        p.tipo,
+        p.aroma,
         p.presentacion,
         p.precio_costo,
         COALESCE(SUM(vd.cantidad), 0) as total_vendido,
@@ -438,7 +438,7 @@ const getSalesByTypeThisMonth = (req, res) => {
     // ✅ Ventas por tipo - Solo PAGADAS y del MES ACTUAL
     const salesByType = db.prepare(`
       SELECT 
-        p.tipo,
+        p.aroma,
         SUM(vd.cantidad) as cantidad_vendida
       FROM ventas v
       INNER JOIN ventas_detalles vd ON v.id = vd.venta_id
@@ -446,7 +446,7 @@ const getSalesByTypeThisMonth = (req, res) => {
       WHERE p.activo = 1
         AND DATE(v.fecha) BETWEEN ? AND ?
         AND v.monto_pagado >= v.total
-      GROUP BY p.tipo
+      GROUP BY p.aroma
       ORDER BY cantidad_vendida DESC
     `).all(fechaInicioStr, fechaHoy);
     res.json({ salesByType });

@@ -18,7 +18,7 @@ const initDB = () => {
     CREATE TABLE IF NOT EXISTS productos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nombre TEXT NOT NULL,
-      tipo TEXT NOT NULL,
+      aroma TEXT NOT NULL,
       presentacion TEXT NOT NULL,
       precio_costo REAL NOT NULL,
       precio_venta REAL NOT NULL,

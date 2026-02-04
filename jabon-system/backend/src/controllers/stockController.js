@@ -27,7 +27,7 @@ const getStockMovements = async (req, res) => {
     const dEnd = toISODate(fecha_fin);
 
     let q = `
-      SELECT sm.*, p.nombre as producto_nombre, p.tipo as producto_tipo, p.presentacion
+      SELECT sm.*, p.nombre as producto_nombre, p.aroma as aroma, p.presentacion
       FROM stock_movimientos sm
       JOIN productos p ON p.id = sm.producto_id
       WHERE 1=1

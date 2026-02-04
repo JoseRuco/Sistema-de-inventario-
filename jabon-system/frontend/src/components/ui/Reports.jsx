@@ -288,7 +288,7 @@ const Reports = () => {
                   <thead className="bg-gray-50 sticky top-0">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Producto</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aroma</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Presentación</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unidades Vendidas</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ingresos</th>
@@ -302,7 +302,7 @@ const Reports = () => {
                           {product.nombre}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 capitalize">
-                          {product.tipo}
+                          {product.aroma}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm">
                           <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs capitalize">

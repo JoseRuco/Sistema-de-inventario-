@@ -281,7 +281,7 @@ const Analytics = () => {
                   <thead>
                     <tr className="border-b-2 border-gray-200 bg-gray-50">
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Producto</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Tipo</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Aroma</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Presentación</th>
                       <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600">Stock</th>
                       <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600">Ventas ({rotationDays}d)</th>
@@ -300,7 +300,7 @@ const Analytics = () => {
                         </td>
                         <td className="px-4 py-3">
                           <span className="inline-block bg-green-100 text-black px-2 py-1 rounded-md text-xs font-medium">
-                            {product.tipo}
+                            {product.aroma}
                           </span>
                         </td>
                         <td className="px-4 py-3">
@@ -363,7 +363,7 @@ const Analytics = () => {
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">Margen de Ganancia por Categoría</h2>
-                  <p className="text-sm text-gray-600">Análisis de rentabilidad por tipo de producto</p>
+                  <p className="text-sm text-gray-600">Análisis de rentabilidad por aroma de producto</p>
                 </div>
               </div>
               <button

@@ -54,7 +54,7 @@ const StockHistory = () => {
       const term = filters.searchTerm.toLowerCase();
       result = result.filter(row => 
         row.producto_nombre?.toLowerCase().includes(term) ||
-        row.tipo?.toLowerCase().includes(term) ||
+        row.aroma?.toLowerCase().includes(term) ||
         row.presentacion?.toLowerCase().includes(term) ||
         row.motivo?.toLowerCase().includes(term)
       );
@@ -157,7 +157,7 @@ const StockHistory = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Producto, tipo o motivo..."
+                placeholder="Producto, aroma o motivo..."
                 value={filters.searchTerm}
                 onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -230,7 +230,7 @@ const StockHistory = () => {
                 <th className="px-4 py-4 text-left text-sm font-semibold">Fecha</th>
                 <th className="px-4 py-4 text-left text-sm font-semibold">Producto</th>
                 <th className="px-4 py-4 text-left text-sm font-semibold">Presentación</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold">Tipo</th>
+                <th className="px-4 py-4 text-left text-sm font-semibold">Aroma</th>
                 <th className="px-4 py-4 text-center text-sm font-semibold">Cantidad</th>
                 <th className="px-4 py-4 text-center text-sm font-semibold">Stock Anterior</th>
                 <th className="px-4 py-4 text-center text-sm font-semibold">Stock Nuevo</th>
@@ -287,12 +287,12 @@ const StockHistory = () => {
                       </div>
                     </td>
 
-                    {/* Tipo con ícono */}
+                    {/* Aroma con ícono */}
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <Layers className="w-4 h-4 text-purple-500" />
                         <span className="text-sm text-gray-600">
-                          {row.tipo || '-'}
+                          {row.aroma || '-'}
                         </span>
                       </div>
                     </td>

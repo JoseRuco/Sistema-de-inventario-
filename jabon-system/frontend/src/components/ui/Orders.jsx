@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Plus, Calendar, User, Search, Trash2, Check, Package, Truck, Clock, AlertCircle, X, CheckCircle, RefreshCcw } from 'lucide-react';
+import { Plus, Calendar, User, Search, Trash2, Check, Package, Truck, Clock, AlertCircle, X, CheckCircle, RefreshCcw, ShoppingCart } from 'lucide-react';
 import { getOrders, createOrder, updateOrderStatus, updateOrder, getProducts, getClients, createClient } from '../../services/api';
 import Notification from './Notification';
 import ClientFormModal from './ClientFormModal';
+import AddProductModal from './AddProductModal';
 import Portal from './Portal';
 
 const Orders = () => {
@@ -25,6 +26,7 @@ const Orders = () => {
   const [productSearch, setProductSearch] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('');
   const [orderNote, setOrderNote] = useState(''); // Estado para la nota
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
   
   // Client creation
   const [showClientModal, setShowClientModal] = useState(false);
@@ -75,7 +77,7 @@ const Orders = () => {
     const existing = cart.find(item => item.producto_id === product.id);
     if (existing) {
       // Validación al incrementar
-      if (existing.cantidad >= product.stock) {
+      if (product.stock && existing.cantidad >= product.stock) {
         showNotification('warning', 'Stock Limitado', `Solo quedan ${product.stock} unidades disponibles`);
         return;
       }
@@ -86,6 +88,7 @@ const Orders = () => {
       setCart([...cart, {
         producto_id: product.id,
         nombre: product.nombre,
+        aroma: product.aroma,
         presentacion: product.presentacion,
         stock_actual: product.stock,
         cantidad: 1
@@ -322,19 +325,27 @@ const Orders = () => {
 
                   <div className="space-y-2">
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Productos:</p>
-                    {order.productos.map((prod, idx) => (
-                      <div key={idx} className="flex justify-between items-center text-sm border-b border-gray-50 pb-1 last:border-0">
-                        <span className="text-gray-700">{prod.nombre} = <span className="px-1 py-1 bg-blue-100 text-blue-800 rounded text-xs"> {prod.presentacion}</span></span>
-                        <div className="flex items-center gap-2">
-                           <span className="font-bold bg-gray-100 px-2 py-0.5 rounded text-gray-700">x{prod.cantidad}</span>
-                           {prod.stock_actual < prod.cantidad && (
-                             <AlertCircle size={20} className="text-red-500" title="Stock insuficiente" />
-                             
-                           )}
-
-                        </div>
-                      </div>
-                    ))}
+                     {order.productos.map((prod, idx) => (
+                       <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0 gap-2">
+                         <div className="flex flex-col min-w-0 flex-1">
+                           <span className="text-gray-800 font-semibold text-sm truncate">{prod.nombre}</span>
+                           <div className="flex flex-wrap gap-1 mt-1">
+                             <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                               {prod.aroma}
+                             </span>
+                             <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                               {prod.presentacion}
+                             </span>
+                           </div>
+                         </div>
+                         <div className="flex items-center gap-2 shrink-0">
+                            <span className="font-bold bg-gray-100 px-2 py-1 rounded-lg text-gray-700 text-xs shadow-sm">x{prod.cantidad}</span>
+                            {prod.stock_actual < prod.cantidad && (
+                              <AlertCircle size={18} className="text-red-500" title="Stock insuficiente" />
+                            )}
+                         </div>
+                       </div>
+                     ))}
                   </div>
                 </div>
 
@@ -554,182 +565,220 @@ const Orders = () => {
                 </div>
               </div>
 
-             <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-6 relative bg-white">
+             <div className="flex-1 overflow-y-auto p-6 bg-white">
+                <div className="max-w-3xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
                 
-                 {/* Left Column: Client & Date & Cart */}
-                 <div className="p-6 overflow-y-auto max-h-[40vh] lg:max-h-full border-b lg:border-b-0 lg:border-r border-gray-200 space-y-4">
-                  <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Datos del Cliente</h3>
-                  
-                  {/* Client Selection */}
-                  <div className="relative">
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Buscar Cliente</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
-                      <input 
-                        type="text"
-                        value={clientSearch}
-                        onChange={(e) => {
-                          setClientSearch(e.target.value);
-                          setShowClientSuggestions(true);
-                          if (!e.target.value) setSelectedClient('');
-                        }}
-                        onFocus={() => setShowClientSuggestions(true)}
-                        placeholder="Nombre del cliente..."
-                        className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    {/* ... (Suggestions logic remains same but simplified for brevity in replacement if possible, but keeping full logic is safer) ... */}
-                    {showClientSuggestions && clientSearch && (
-                      <div className="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-40 overflow-auto">
-                        {filteredClients.length > 0 ? (
-                           filteredClients.map(client => (
-                             <div 
-                               key={client.id}
-                               onClick={() => handleSelectClient(client)}
-                               className="p-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-gray-50 last:border-0"
-                             >
-                               <div className="font-semibold">{client.nombre}</div>
-                               <div className="text-xs text-gray-500">{client.telefono}</div>
-                             </div>
-                           ))
-                        ) : (
-                          <div 
-                            onClick={() => {
-                                setClientFormData({...clientFormData, nombre: clientSearch});
-                                setShowClientModal(true);
-                                setShowClientSuggestions(false);
+                  {/* Column 1: Client & Delivery Info */}
+                  <div className="space-y-6">
+                    <section>
+                      <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide mb-3 flex items-center gap-2">
+                        <User size={16} className="text-blue-500" />
+                        Datos del Cliente
+                      </h3>
+                      
+                      {/* Client Selection */}
+                      <div className="relative">
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Buscar Cliente</label>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
+                          <input 
+                            type="text"
+                            value={clientSearch}
+                            onChange={(e) => {
+                              setClientSearch(e.target.value);
+                              setShowClientSuggestions(true);
+                              if (!e.target.value) setSelectedClient('');
                             }}
-                            className="p-3 text-blue-600 hover:bg-blue-50 cursor-pointer font-semibold text-sm flex items-center gap-2"
-                          >
-                             <Plus size={16} /> Crear "{clientSearch}"
+                            onFocus={() => setShowClientSuggestions(true)}
+                            placeholder="Nombre del cliente..."
+                            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all"
+                          />
+                        </div>
+                        {showClientSuggestions && clientSearch && (
+                          <div className="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-xl max-h-60 overflow-auto animate-in fade-in slide-in-from-top-2">
+                            {filteredClients.length > 0 ? (
+                               filteredClients.map(client => (
+                                 <div 
+                                   key={client.id}
+                                   onClick={() => handleSelectClient(client)}
+                                   className="p-3 hover:bg-blue-50 cursor-pointer text-sm border-b border-gray-50 last:border-0 flex justify-between items-center"
+                                 >
+                                   <div>
+                                     <div className="font-semibold text-gray-800">{client.nombre}</div>
+                                     <div className="text-xs text-gray-500">{client.telefono}</div>
+                                   </div>
+                                   <div className="text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Check size={16} />
+                                   </div>
+                                 </div>
+                               ))
+                            ) : (
+                              <div 
+                                onClick={() => {
+                                    setClientFormData({...clientFormData, nombre: clientSearch});
+                                    setShowClientModal(true);
+                                    setShowClientSuggestions(false);
+                                }}
+                                className="p-3 text-blue-600 hover:bg-blue-50 cursor-pointer font-semibold text-sm flex items-center gap-2"
+                              >
+                                 <Plus size={16} /> Crear nuevo cliente "{clientSearch}"
+                              </div>
+                            )}
                           </div>
                         )}
-                      </div>
-                    )}
-                    {selectedClient && (
-                         <div className="mt-2 text-xs text-green-700 font-bold bg-green-50 p-2 rounded border border-green-200 flex items-center gap-2">
-                           <Check size={12}/> {clients.find(c => c.id === selectedClient)?.nombre}
-                         </div>
-                    )}
-                  </div>
-
-                  {/* Date Selection */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Fecha de Entrega</label>
-                    <input 
-                      type="date" 
-                      value={deliveryDate}
-                      onChange={(e) => setDeliveryDate(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  {/* Note Input */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Nota (Opcional)</label>
-                    <textarea 
-                      value={orderNote}
-                      onChange={(e) => setOrderNote(e.target.value)}
-                      placeholder="Ej: Entregar por la tarde..."
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none h-20"
-                    />
-                  </div>
-
-                  {/* Cart Summary (Left Side) - Flexible Height */}
-                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 flex flex-col">
-                    <h3 className="font-bold text-gray-700 mb-2 flex items-center gap-2 text-sm">
-                      <Package size={16}/> 
-                      Productos ({cart.reduce((acc, item) => acc + item.cantidad, 0)})
-                    </h3>
-                    
-                    {cart.length === 0 ? (
-                      <p className="text-gray-400 text-xs text-center py-4 italic">Selecciona productos...</p>
-                    ) : (
-                      <div className="space-y-2 overflow-y-auto max-h-40 lg:max-h-[300px] pr-1">
-                        {cart.map(item => (
-                          <div key={item.producto_id} className="bg-white p-2 rounded shadow-sm flex items-center justify-between border border-gray-100">
-                            <div className="flex-1 min-w-0 mr-2">
-                              <div className="text-sm font-semibold truncate">{item.nombre}</div>
-                              <div className="text-xs text-gray-500 truncate">{item.presentacion}</div>
-                            </div>
-                            <div className="flex items-center gap-1 bg-gray-100 rounded p-0.5">
-                               <button onClick={() => updateCartQuantity(item.producto_id, item.cantidad - 1)} className="w-6 h-6 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-200 rounded">-</button>
-                               <span className="text-xs w-6 text-center font-medium">{item.cantidad}</span>
-                               <button onClick={() => updateCartQuantity(item.producto_id, item.cantidad + 1)} className="w-6 h-6 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-200 rounded">+</button>
-                            </div>
-                            <button onClick={() => removeFromCart(item.producto_id)} className="text-red-400 hover:text-red-600 ml-1"><Trash2 size={16} /></button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                </div>
-
-                 {/* Right Column: Product Selection - Must always be visible/scrollable */}
-                 <div className="flex flex-col h-full overflow-hidden p-6 bg-white">
-                   <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide mb-3">Agregar Productos</h3>
-                   <div className="relative mb-3 shrink-0">
-                      <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
-                      <input 
-                        type="text"
-                        value={productSearch}
-                        onChange={(e) => setProductSearch(e.target.value)}
-                        placeholder="Buscar jabones..."
-                        className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                      />
-                   </div>
-                   
-                   <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg p-2 space-y-2 bg-gray-50 shadow-inner">
-                      {filteredProducts.map(product => {
-                         const inCart = cart.find(c => c.producto_id === product.id);
-                         return (
-                            <div key={product.id} className={`p-3 rounded-lg border shadow-sm flex justify-between items-center transition-all ${inCart ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-100' : 'bg-white border-gray-100 hover:border-blue-200'}`}>
-                               <div className="flex-1 min-w-0 mr-2">
-                                 <div className="font-semibold text-sm text-gray-800 truncate">{product.nombre}</div>
-                                 <div className="text-xs text-gray-500">{product.presentacion}</div>
-                                 <div className={`text-xs font-bold mt-0.5 ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                   Stock: {product.stock}
-                                 </div>
+                        {selectedClient && (
+                             <div className="mt-2 text-xs text-green-700 font-bold bg-green-50 p-2 rounded-lg border border-green-200 flex items-center justify-between">
+                               <div className="flex items-center gap-2">
+                                 <Check size={14} className="bg-green-500 text-white rounded-full p-0.5" /> 
+                                 {clients.find(c => c.id === selectedClient)?.nombre}
                                </div>
                                <button 
-                                 onClick={() => handleAddToCart(product)}
-                                 disabled={product.stock <= 0}
-                                 className={`p-2 rounded-full transition-colors shrink-0 ${
-                                   inCart 
-                                     ? 'bg-blue-600 text-white' 
-                                     : product.stock <= 0 
-                                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                       : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600'
-                                 }`}
+                                 onClick={() => {
+                                   setSelectedClient('');
+                                   setClientSearch('');
+                                 }}
+                                 className="text-green-600 hover:text-green-800"
                                >
-                                 <Plus size={18} />
+                                 <X size={14} />
                                </button>
-                            </div>
-                         );
-                      })}
-                   </div>
-                </div>
+                             </div>
+                        )}
+                      </div>
+                    </section>
 
-             </div>
+                    <section className="grid grid-cols-1 gap-4">
+                      {/* Date Selection */}
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1">
+                          <Calendar size={12} /> Fecha de Entrega
+                        </label>
+                        <input 
+                          type="date" 
+                          value={deliveryDate}
+                          onChange={(e) => setDeliveryDate(e.target.value)}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* Note Input */}
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Nota del Pedido (Opcional)</label>
+                        <textarea 
+                          value={orderNote}
+                          onChange={(e) => setOrderNote(e.target.value)}
+                          placeholder="Instrucciones especiales para la entrega..."
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none h-24 shadow-sm"
+                        />
+                      </div>
+                    </section>
+                  </div>
+
+                  {/* Column 2: Cart & Add Product Action */}
+                  <div className="flex flex-col h-full space-y-4">
+                    <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 flex flex-col h-full shadow-inner">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-bold text-gray-800 flex items-center gap-2 text-sm uppercase tracking-wide">
+                          <Package size={18} className="text-indigo-500" />
+                          Carrito de Pedido
+                        </h3>
+                        <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold">
+                          {cart.reduce((acc, item) => acc + item.cantidad, 0)} items
+                        </span>
+                      </div>
+                      
+                      {cart.length === 0 ? (
+                        <div className="flex-1 flex flex-col items-center justify-center py-10 text-center">
+                          <div className="bg-gray-200 p-4 rounded-full mb-3 text-gray-400">
+                            <ShoppingCart size={32} />
+                          </div>
+                          <p className="text-gray-500 text-sm font-medium">El carrito está vacío</p>
+                          <p className="text-gray-400 text-xs mt-1">Usa el botón de abajo para agregar productos</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3 overflow-y-auto max-h-[350px] pr-2 mb-4 scrollbar-thin scrollbar-thumb-gray-300">
+                          {cart.map(item => (
+                            <div key={item.producto_id} className="bg-white p-3 rounded-xl shadow-sm flex items-center justify-between border border-gray-100 hover:border-indigo-200 transition-colors">
+                              <div className="flex-1 min-w-0 mr-3">
+                                <div className="text-sm font-bold text-gray-800 truncate">{item.nombre}</div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tight">
+                                    {item.aroma}
+                                  </span>
+                                  <span className="text-[10px] bg-purple-100 text-purple-800 px-3 py-0.5 rounded-full font-bold uppercase tracking-tight">
+                                    {item.presentacion}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="inline-block items-center gap-1 bg-gray-50 rounded-lg p-1 border border-gray-100">
+                                 <button 
+                                   onClick={() => updateCartQuantity(item.producto_id, item.cantidad + 1)} 
+                                   className="w-8 h-8 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+                                 >+</button>
+                                 
+                                 <span className="text-xs w-6 text-center pl-1 ml-2 font-bold text-gray-800">{item.cantidad}</span>
+                                 
+                                 <button 
+                                   onClick={() => updateCartQuantity(item.producto_id, item.cantidad - 1)} 
+                                   className="w-8 h-8 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+                                 >-</button>
+
+                              </div>
+                              <button 
+                                onClick={() => removeFromCart(item.producto_id)} 
+                                className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-all ml-1"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Botón AGREGAR PRODUCTO similar a Sales */}
+                      <button
+                        onClick={() => setShowAddProductModal(true)}
+                        className="w-full mt-auto py-4 bg-indigo-50 border-2 border-dashed border-indigo-200 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-indigo-100 hover:border-indigo-300 transition-all group"
+                      >
+                        <div className="bg-indigo-600 text-white p-2 rounded-full shadow-lg group-hover:scale-110 transition-transform">
+                          <Plus size={24} />
+                        </div>
+                        <span className="font-bold text-indigo-700 uppercase tracking-widest text-sm">Agregar Producto</span>
+                        <p className="text-[10px] text-indigo-500 font-medium">Selecciona producto, aroma y presentación</p>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Footer Actions */}
-              <div className="p-6 border-t border-gray-200 bg-gray-50 flex gap-3 flex-shrink-0">
+              <div className="p-6 border-t border-gray-200 bg-gray-100 flex gap-4 flex-shrink-0">
                 <button 
                   onClick={() => setShowNewOrderModal(false)}
-                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                  className="flex-1 px-4 py-4 border-2 border-gray-300 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors font-bold uppercase tracking-widest text-xs"
                 >
-                  Cancelar
+                  Cerrar
                 </button>
                 <button 
                   onClick={handleSubmitOrder}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg font-bold shadow-lg transition-all"
+                  className="flex-[2] px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-2xl font-bold shadow-lg transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2"
                 >
-                  Guardar Pedido
+                  <CheckCircle size={18} />
+                  Confirmar Pedido
                 </button>
               </div>
           </div>
         </div>
+        
+        {/* Modal de Selección de Productos Integradado */}
+        <AddProductModal
+          isOpen={showAddProductModal}
+          onClose={() => setShowAddProductModal(false)}
+          products={products}
+          onAddToCart={(product) => {
+            handleAddToCart(product);
+            setShowAddProductModal(false);
+          }}
+        />
         </Portal>
       )}
 

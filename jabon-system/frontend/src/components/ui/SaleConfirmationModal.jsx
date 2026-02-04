@@ -60,7 +60,7 @@ const SaleConfirmationModal = ({ isOpen, cart, total, paymentType, paymentMethod
                                     <div className="flex justify-between items-start mb-1.5">
                                         <div className="flex-1">
                                             <h3 className="font-bold text-gray-800 text-sm">{item.nombre}</h3>
-                                            <p className="text-xs text-gray-500">{item.tipo}</p>
+                                            <p className="text-xs text-gray-500">{item.aroma}</p>
                                         </div>
                                         <div className="text-right ml-2">
                                             <p className="text-xs text-gray-500">Cant.</p>

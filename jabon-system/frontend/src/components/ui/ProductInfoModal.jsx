@@ -64,7 +64,7 @@ const ProductInfoModal = ({ isOpen, product, onClose }) => {
               <h2 className="text-2xl font-bold mb-2">{displayProduct.nombre}</h2>
               <div className="flex flex-wrap gap-2">
                 <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm">
-                  {displayProduct.tipo}
+                  {displayProduct.aroma}
                 </span>
                 <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm">
                   {displayProduct.presentacion}

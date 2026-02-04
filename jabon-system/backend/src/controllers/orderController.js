@@ -87,6 +87,7 @@ exports.getOrders = (req, res) => {
       SELECT 
         pd.cantidad, 
         pr.nombre, 
+        pr.aroma,
         pr.presentacion,
         pr.stock as stock_actual
       FROM pedidos_detalles pd

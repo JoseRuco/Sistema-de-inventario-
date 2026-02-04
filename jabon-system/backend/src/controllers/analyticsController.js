@@ -61,7 +61,7 @@ exports.getLowRotationProducts = (req, res) => {
       SELECT 
         p.id,
         p.nombre,
-        p.tipo,
+        p.aroma,
         p.presentacion,
         p.stock,
         p.precio_costo,
@@ -239,7 +239,7 @@ exports.getProfitMarginByCategory = (req, res) => {
     // PASO 3: Obtener costos y ganancias por categoría de esas MISMAS ventas
     const categoryQuery = `
       SELECT 
-        p.tipo as categoria,
+        p.aroma as categoria,
         COUNT(DISTINCT p.id) as num_productos,
         COALESCE(SUM(vd.cantidad), 0) as unidades_vendidas,
         COALESCE(SUM(vd.subtotal * (CAST(v.total AS REAL) / (v.total + v.descuento))), 0) as ingresos_categoria,
@@ -249,7 +249,7 @@ exports.getProfitMarginByCategory = (req, res) => {
       INNER JOIN ventas_detalles vd ON p.id = vd.producto_id
       INNER JOIN ventas v ON vd.venta_id = v.id
       WHERE vd.venta_id IN (${placeholders})
-      GROUP BY p.tipo
+      GROUP BY p.aroma
       ORDER BY ganancia_categoria DESC
     `;
 

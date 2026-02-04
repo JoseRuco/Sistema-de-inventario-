@@ -306,7 +306,7 @@ const calculateTotal = () => {
                                 <div key={idx} className="flex items-center justify-between text-sm bg-white rounded-lg p-3 border border-gray-200">
                                   <div className="flex-1">
                                     <p className="font-semibold text-gray-800">{producto.producto_nombre}</p>
-                                    <p className="text-xs text-gray-500">{producto.tipo} - {producto.presentacion}</p>
+                                    <p className="text-xs text-gray-500">{producto.aroma} - {producto.presentacion}</p>
                                   </div>
                                   <div className="text-right ml-4">
                                     <p className="font-bold text-gray-800">${producto.subtotal.toLocaleString()}</p>

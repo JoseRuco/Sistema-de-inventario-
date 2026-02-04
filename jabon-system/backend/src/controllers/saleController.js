@@ -382,7 +382,7 @@ exports.getSale = (req, res) => {
         vd.precio_unitario,
         vd.subtotal,
         p.nombre as producto_nombre,
-        p.tipo,
+        p.aroma,
         p.presentacion
       FROM ventas_detalles vd
       INNER JOIN productos p ON vd.producto_id = p.id

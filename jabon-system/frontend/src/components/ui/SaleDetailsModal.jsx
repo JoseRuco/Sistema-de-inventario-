@@ -139,9 +139,9 @@ const SaleDetailsModal = ({ isOpen, ventaId, onClose }) => {
                           <p className="font-medium text-gray-900 text-sm">
                             {detail.producto_nombre || 'Producto'}
                           </p>
-                          {detail.tipo && detail.presentacion && (
+                          {detail.aroma && detail.presentacion && (
                             <p className="text-xs text-gray-500">
-                              {detail.tipo} - {detail.presentacion}
+                              {detail.aroma} - {detail.presentacion}
                             </p>
                           )}
                         </td>
