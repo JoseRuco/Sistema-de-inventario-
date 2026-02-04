@@ -325,14 +325,16 @@ function Products() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     >
                       <option value="limón">Limón</option>
-                      <option value="naranja">Naranja piña</option>
-                      <option value="manzana">Manzana Verde</option>
+                      <option value="naranja piña">Naranja piña</option>
+                      <option value="manzana verde">Manzana Verde</option>
                       <option value="palmolive">Palmolive</option>
                       <option value="floral">Floral</option>
                       <option value="citronela">Citronela</option>
                       <option value="canela">Canela</option>
                       <option value="lavanda">Lavanda</option>
                       <option value="musk">Musk</option>
+                      <option value="avena">Avena</option>
+                      <option value="maracuya">Maracuya</option>
                       <option value="sandalo">Sandalo</option>
                       <option value="vainilla">Vainilla</option>
                       <option value="suavitel">Suavitel</option>

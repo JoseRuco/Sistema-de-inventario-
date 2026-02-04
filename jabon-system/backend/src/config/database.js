@@ -140,7 +140,6 @@ const initDB = () => {
     )
   `);
 
-
   // Tabla de configuración
   db.exec(`
     CREATE TABLE IF NOT EXISTS configuracion (
@@ -154,8 +153,8 @@ const initDB = () => {
   if (configCount === 0) {
     const insertConfig = db.prepare('INSERT INTO configuracion (clave, valor) VALUES (?, ?)');
     insertConfig.run('alert_email', 'usuario@ejemplo.com');
-    insertConfig.run('alert_subject', 'Alerta: Stock Bajo - {producto}');
-    insertConfig.run('alert_message', 'El producto {producto} tiene un stock bajo de {stock} unidades. Por favor reabastecer.');
+    insertConfig.run('alert_subject', 'Alerta: Stock Bajo - {producto} ({aroma} - {presentacion})');
+    insertConfig.run('alert_message', 'El producto {producto} (Aroma: {aroma}, Presentación: {presentacion}) ha alcanzado un stock bajo de {stock} unidades.');
     insertConfig.run('smtp_host', 'smtp.gmail.com');
     insertConfig.run('smtp_port', '587');
     insertConfig.run('smtp_user', '');
@@ -205,7 +204,7 @@ const initDB = () => {
     const columnsCli = tableInfoCli.map(col => col.name);
     if (!columnsCli.includes('activo')) {
       db.exec("ALTER TABLE clientes ADD COLUMN activo INTEGER DEFAULT 1");
-      console.log('✅ Columna activo añadida a la tabla clientes');
+      console.log('✅ Columna activo añadida a la clientes');
     }
 
     // --- MIGRACIONES DE VENTAS ---
@@ -230,6 +229,21 @@ const initDB = () => {
     if (!hasNotasPedidos) {
       db.exec('ALTER TABLE pedidos ADD COLUMN notas TEXT');
       console.log('✅ Columna notas añadida a la tabla pedidos');
+    }
+
+    // --- MIGRACIONES DE CONFIGURACIÓN ---
+    console.log('🔧 Verificando configuración de alertas...');
+    const currentSubject = db.prepare("SELECT valor FROM configuracion WHERE clave = 'alert_subject'").get();
+    const currentMessage = db.prepare("SELECT valor FROM configuracion WHERE clave = 'alert_message'").get();
+
+    if (currentSubject && !currentSubject.valor.includes('{aroma}')) {
+      db.prepare("UPDATE configuracion SET valor = 'Alerta: Stock Bajo - {producto} ({aroma} - {presentacion})' WHERE clave = 'alert_subject'").run();
+      console.log('✅ Subject de alerta actualizado');
+    }
+
+    if (currentMessage && !currentMessage.valor.includes('{aroma}')) {
+      db.prepare("UPDATE configuracion SET valor = 'El producto {producto} (Aroma: {aroma}, Presentación: {presentacion}) ha alcanzado un stock bajo de {stock} unidades.' WHERE clave = 'alert_message'").run();
+      console.log('✅ Mensaje de alerta actualizado');
     }
 
     // --- OPTIMIZACIÓN: Índices ---

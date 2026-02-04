@@ -140,10 +140,10 @@ exports.createSale = (req, res) => {
 
       // 🔔 VERIFICAR STOCK BAJO Y ENVIAR ALERTA
       try {
-        const currentStock = db.prepare('SELECT stock, nombre, presentacion FROM productos WHERE id = ?').get(producto.producto_id);
+        const currentStock = db.prepare('SELECT stock, nombre, aroma, presentacion FROM productos WHERE id = ?').get(producto.producto_id);
         if (currentStock && currentStock.stock < 10) {
-          console.log(`⚠️ Stock bajo detectado para ${currentStock.nombre} (${currentStock.presentacion}): ${currentStock.stock}`);
-          notificationService.sendLowStockAlert(currentStock.nombre, currentStock.presentacion, currentStock.stock);
+          console.log(`⚠️ Stock bajo detectado para ${currentStock.nombre} - ${currentStock.aroma} (${currentStock.presentacion}): ${currentStock.stock}`);
+          notificationService.sendLowStockAlert(currentStock.nombre, currentStock.aroma, currentStock.presentacion, currentStock.stock);
         }
       } catch (alertError) {
         console.error('Error verificando alerta de stock:', alertError);

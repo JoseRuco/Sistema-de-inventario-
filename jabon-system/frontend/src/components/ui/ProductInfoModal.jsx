@@ -41,8 +41,8 @@ const ProductInfoModal = ({ isOpen, product, onClose }) => {
   const showLoading = loading && !stats;
 
   const margen = displayProduct.precio_venta - displayProduct.precio_costo;
-  const porcentajeMargen = displayProduct.precio_costo > 0 
-    ? ((margen / displayProduct.precio_costo) * 100).toFixed(1) 
+  const porcentajeMargen = displayProduct.precio_venta > 0 
+    ? ((margen / displayProduct.precio_venta) * 100).toFixed(1) 
     : 0;
 
   const getStockStatus = (stock) => {
