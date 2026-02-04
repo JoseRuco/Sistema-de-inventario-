@@ -181,9 +181,34 @@ const initDB = () => {
     console.error('❌ Error verificando/creando Cliente General:', error);
   }
 
-
-  // Añadir columna descuento si no existe
+  // --- MIGRACIONES ---
   try {
+    // --- MIGRACIONES DE PRODUCTOS ---
+    const tableInfoProd = db.prepare("PRAGMA table_info(productos)").all();
+    const columnsProd = tableInfoProd.map(col => col.name);
+
+    if (!columnsProd.includes('aroma')) {
+      db.exec("ALTER TABLE productos ADD COLUMN aroma TEXT NOT NULL DEFAULT ''");
+      console.log('✅ Columna aroma añadida a la tabla productos');
+    }
+    if (!columnsProd.includes('presentacion')) {
+      db.exec("ALTER TABLE productos ADD COLUMN presentacion TEXT NOT NULL DEFAULT ''");
+      console.log('✅ Columna presentacion añadida a la tabla productos');
+    }
+    if (!columnsProd.includes('activo')) {
+      db.exec("ALTER TABLE productos ADD COLUMN activo INTEGER DEFAULT 1");
+      console.log('✅ Columna activo añadida a la tabla productos');
+    }
+
+    // --- MIGRACIONES DE CLIENTES ---
+    const tableInfoCli = db.prepare("PRAGMA table_info(clientes)").all();
+    const columnsCli = tableInfoCli.map(col => col.name);
+    if (!columnsCli.includes('activo')) {
+      db.exec("ALTER TABLE clientes ADD COLUMN activo INTEGER DEFAULT 1");
+      console.log('✅ Columna activo añadida a la tabla clientes');
+    }
+
+    // --- MIGRACIONES DE VENTAS ---
     const tableInfo = db.prepare("PRAGMA table_info(ventas)").all();
     const hasDescuento = tableInfo.some(col => col.name === 'descuento');
 
@@ -199,9 +224,9 @@ const initDB = () => {
       console.log('✅ Columna notas añadida a la tabla ventas');
     }
 
-    // Añadir columna notas a pedidos si no existe
+    // --- MIGRACIONES DE PEDIDOS ---
     const tableInfoPedidos = db.prepare("PRAGMA table_info(pedidos)").all();
-    const hasNotasPedidos = tableInfoPedidos.some(col => col.name === 'notas'); // SQLite columns are case-insensitive usually but better consistent
+    const hasNotasPedidos = tableInfoPedidos.some(col => col.name === 'notas');
     if (!hasNotasPedidos) {
       db.exec('ALTER TABLE pedidos ADD COLUMN notas TEXT');
       console.log('✅ Columna notas añadida a la tabla pedidos');
