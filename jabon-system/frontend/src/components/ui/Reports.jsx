@@ -261,7 +261,7 @@ const Reports = () => {
                   <p className="text-red-600 text-sm mb-1 font-medium">Ventas Sin Pagar</p>
                   <p className="text-3xl font-bold text-red-600">{unpaidSales}</p>
                   <p className="text-xs text-red-500 mt-1">
-                    {unpaidSales === 1 ? 'NO SUBEN A LA ESTADISTICA' : 'ventas pendiente'}
+                    {unpaidSales === 1 ? 'NO SUBEN A LA ESTADISTICA' : 'ventas pendientes'}
                   </p>
                 </div>
                 <div className="p-3 bg-red-100 rounded-lg">

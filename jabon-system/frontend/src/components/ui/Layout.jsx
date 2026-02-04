@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 import { getColombiaDateObject } from "../../utils/dateUtils";
+import Portal from "./Portal";
 
 
 const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
@@ -93,58 +94,60 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
 
       {/* Sidebar - Mobile */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setSidebarOpen(false)}
-          />
-          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-white shadow-xl">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <div className="inline-flex w-25 h-50 ">
-                <img
-                  draggable="false"
-                  src="/img/Programmer-SINFONDO.png"
-                  alt=""
-                />
-              </div>
+        <Portal>
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div
+              className="absolute inset-0 bg-black bg-opacity-50"
+              onClick={() => setSidebarOpen(false)}
+            />
+            <aside className="absolute left-0 top-0 bottom-0 w-64 bg-white shadow-xl">
+              <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+                <div className="inline-flex w-25 h-50 ">
+                  <img
+                    draggable="false"
+                    src="/img/Programmer-SINFONDO.png"
+                    alt=""
+                  />
+                </div>
 
-              <button onClick={() => setSidebarOpen(false)}>
-                <X size={24} />
-              </button>
-            </div>
-            <nav className="p-1 space-y-0">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setCurrentView(item.id);
-                      setSidebarOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${currentView === item.id
-                      ? "bg-primary text-white shadow-md"
-                      : "text-gray-700 hover:bg-gray-100"
-                      }`}
-                  >
-                    <Icon size={20} />
-                    <span className="font-medium">{item.label}</span>
-                  </button>
-                );
-              })}
-
-              <div className="p-4 border-t border-gray-200">
-                <button
-                  onClick={onLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all"
-                >
-                  <LogOut size={20} />
-                  <span className="font-medium">Cerrar sesión</span>
+                <button onClick={() => setSidebarOpen(false)}>
+                  <X size={24} />
                 </button>
               </div>
-            </nav>
-          </aside>
-        </div>
+              <nav className="p-1 space-y-0">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setCurrentView(item.id);
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${currentView === item.id
+                        ? "bg-primary text-white shadow-md"
+                        : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                    >
+                      <Icon size={20} />
+                      <span className="font-medium">{item.label}</span>
+                    </button>
+                  );
+                })}
+
+                <div className="p-4 border-t border-gray-200">
+                  <button
+                    onClick={onLogout}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all"
+                  >
+                    <LogOut size={20} />
+                    <span className="font-medium">Cerrar sesión</span>
+                  </button>
+                </div>
+              </nav>
+            </aside>
+          </div>
+        </Portal>
       )}
 
       {/* Main Content */}

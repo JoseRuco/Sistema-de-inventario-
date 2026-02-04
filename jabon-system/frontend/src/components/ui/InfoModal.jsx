@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { CheckCircle, Package, Edit, UserCheck, AlertTriangle } from 'lucide-react';
+import Portal from './Portal';
 
 const InfoModal = ({ 
   isOpen, 
@@ -57,46 +58,48 @@ const InfoModal = ({
   const { gradient, bg, icon: Icon, iconColor } = config[type] || config.error;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] animate-fade-in p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 animate-success-bounce">
-        <div className="p-8 text-center">
-          {/* Icono animado */}
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className={`absolute inset-0 ${bg} rounded-full animate-ping opacity-75`}></div>
-              <div className={`relative bg-gradient-to-br ${gradient} rounded-full p-6 shadow-lg`}>
-                <Icon className="text-white animate-check-draw" size={64} strokeWidth={3} />
+    <Portal>
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] animate-fade-in p-4">
+        <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 animate-success-bounce">
+          <div className="p-8 text-center">
+            {/* Icono animado */}
+            <div className="flex justify-center mb-6">
+              <div className="relative">
+                <div className={`absolute inset-0 ${bg} rounded-full animate-ping opacity-75`}></div>
+                <div className={`relative bg-gradient-to-br ${gradient} rounded-full p-6 shadow-lg`}>
+                  <Icon className="text-white animate-check-draw" size={64} strokeWidth={3} />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Título */}
-          <h2 className="text-3xl font-bold text-gray-800 mb-3 animate-slide-up">
-            {title}
-          </h2>
+            {/* Título */}
+            <h2 className="text-3xl font-bold text-gray-800 mb-3 animate-slide-up">
+              {title}
+            </h2>
 
-          {/* Mensaje */}
-          <p className="text-gray-600 mb-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-            {message}
-          </p>
-
-          {/* Subtítulo adicional */}
-          {subtitle && (
-            <p className="text-sm text-gray-500 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              {subtitle}
+            {/* Mensaje */}
+            <p className="text-gray-600 mb-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+              {message}
             </p>
-          )}
 
-          {/* Indicador de progreso */}
-          <div className="w-full bg-gray-200 rounded-full h-1 overflow-hidden mt-6">
-            <div 
-              className={`bg-gradient-to-r ${gradient} h-full animate-progress`}
-              style={{ animationDuration: `${duration}ms` }}
-            ></div>
+            {/* Subtítulo adicional */}
+            {subtitle && (
+              <p className="text-sm text-gray-500 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                {subtitle}
+              </p>
+            )}
+
+            {/* Indicador de progreso */}
+            <div className="w-full bg-gray-200 rounded-full h-1 overflow-hidden mt-6">
+              <div 
+                className={`bg-gradient-to-r ${gradient} h-full animate-progress`}
+                style={{ animationDuration: `${duration}ms` }}
+              ></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 };
 

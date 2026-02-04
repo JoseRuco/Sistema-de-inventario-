@@ -29,28 +29,32 @@ const SaleDetailsModal = ({ isOpen, ventaId, onClose }) => {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="text-center mt-4 text-gray-600">Cargando detalles...</p>
+      <Portal>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl p-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="text-center mt-4 text-gray-600">Cargando detalles...</p>
+          </div>
         </div>
-      </div>
+      </Portal>
     );
   }
 
   if (!sale) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl p-8">
-          <p className="text-center text-red-600">Error al cargar los detalles de la venta</p>
-          <button
-            onClick={onClose}
-            className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors w-full"
-          >
-            Cerrar
-          </button>
+      <Portal>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl p-8">
+            <p className="text-center text-red-600">Error al cargar los detalles de la venta</p>
+            <button
+              onClick={onClose}
+              className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors w-full"
+            >
+              Cerrar
+            </button>
+          </div>
         </div>
-      </div>
+      </Portal>
     );
   }
 
