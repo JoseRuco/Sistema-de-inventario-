@@ -43,7 +43,7 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
     { id: "stockHistory", label: "Historial de Stock", icon: PackageCheck },
     { id: "analytics", label: "Análisis de Negocio", icon: TrendingUp },
     { id: "reports", label: "Reportes", icon: BarChart3 },
-    { id: "config", label: "Configuración", icon: Settings },
+    //{ id: "config", label: "Configuración", icon: Settings },
   ];
 
   return (
