@@ -186,15 +186,59 @@ const initDB = () => {
     const tableInfoProd = db.prepare("PRAGMA table_info(productos)").all();
     const columnsProd = tableInfoProd.map(col => col.name);
 
-    if (!columnsProd.includes('aroma')) {
+    // ✅ MIGRACIÓN: Eliminar columna legada 'tipo' que causa NOT NULL constraint error
+    // En versiones antiguas se usaba 'tipo', ahora se usa nombre+aroma+presentacion
+    if (columnsProd.includes('tipo')) {
+      console.log('🔧 Migrando tabla productos: eliminando columna tipo (legacy)...');
+      db.exec(`
+        BEGIN TRANSACTION;
+        
+        CREATE TABLE IF NOT EXISTS productos_nueva (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nombre TEXT NOT NULL,
+          aroma TEXT NOT NULL DEFAULT '',
+          presentacion TEXT NOT NULL DEFAULT '',
+          precio_costo REAL NOT NULL,
+          precio_venta REAL NOT NULL,
+          stock INTEGER NOT NULL DEFAULT 0,
+          activo INTEGER DEFAULT 1,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        INSERT INTO productos_nueva (id, nombre, aroma, presentacion, precio_costo, precio_venta, stock, activo, created_at)
+        SELECT 
+          id,
+          COALESCE(nombre, tipo, '') as nombre,
+          COALESCE(aroma, '') as aroma,
+          COALESCE(presentacion, '') as presentacion,
+          precio_costo,
+          precio_venta,
+          stock,
+          COALESCE(activo, 1),
+          created_at
+        FROM productos;
+
+        DROP TABLE productos;
+        ALTER TABLE productos_nueva RENAME TO productos;
+
+        COMMIT;
+      `);
+      console.log('✅ Tabla productos migrada correctamente (columna tipo eliminada)');
+    }
+
+    // Refrescar info de columnas tras posible migración
+    const tableInfoProdFresh = db.prepare("PRAGMA table_info(productos)").all();
+    const columnsProdFresh = tableInfoProdFresh.map(col => col.name);
+
+    if (!columnsProdFresh.includes('aroma')) {
       db.exec("ALTER TABLE productos ADD COLUMN aroma TEXT NOT NULL DEFAULT ''");
       console.log('✅ Columna aroma añadida a la tabla productos');
     }
-    if (!columnsProd.includes('presentacion')) {
+    if (!columnsProdFresh.includes('presentacion')) {
       db.exec("ALTER TABLE productos ADD COLUMN presentacion TEXT NOT NULL DEFAULT ''");
       console.log('✅ Columna presentacion añadida a la tabla productos');
     }
-    if (!columnsProd.includes('activo')) {
+    if (!columnsProdFresh.includes('activo')) {
       db.exec("ALTER TABLE productos ADD COLUMN activo INTEGER DEFAULT 1");
       console.log('✅ Columna activo añadida a la tabla productos');
     }
