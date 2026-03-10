@@ -21,6 +21,7 @@ function Products() {
 
   const [formData, setFormData] = useState({
     nombre: '',
+    tipo: 'Jabón de Limpieza',
     aroma: 'limón',
     presentacion: 'galon',
     precio_costo: '',
@@ -69,6 +70,7 @@ function Products() {
       setEditingProduct(null);
       setFormData({
         nombre: '',
+        tipo: 'Jabón de Limpieza',
         aroma: 'limón',
         presentacion: 'galon',
         precio_costo: '',
@@ -92,6 +94,7 @@ function Products() {
     setEditingProduct(product);
     setFormData({
       nombre: product.nombre,
+      tipo: product.tipo || 'Jabón de Limpieza',
       aroma: product.aroma,
       presentacion: product.presentacion,
       precio_costo: product.precio_costo,
@@ -253,6 +256,7 @@ function Products() {
               setEditingProduct(null);
               setFormData({
                 nombre: '',
+                tipo: 'Jabón de Limpieza',
                 aroma: 'limón',
                 presentacion: 'galon',
                 precio_costo: '',
@@ -312,6 +316,27 @@ function Products() {
                       <option value="limpido">Limpido</option>
                       <option value="jabon cosmetico">Jabon Cosmetico</option>
                       <option value="shampoo vehiculos">Shampoo Vehiculos</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tipo / Categoría
+                    </label>
+                    <select
+                      value={formData.tipo}
+                      onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      required
+                    >
+                      <option value="Jabón de Limpieza">Jabón de Limpieza</option>
+                      <option value="Detergente">Detergente</option>
+                      <option value="Desengrasante">Desengrasante</option>
+                      <option value="Ambientador">Ambientador</option>
+                      <option value="Suavizante">Suavizante</option>
+                      <option value="Desinfectante">Desinfectante</option>
+                      <option value="Cosméticos">Cosméticos</option>
+                      <option value="Otros">Otros</option>
                     </select>
                   </div>
 

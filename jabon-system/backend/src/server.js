@@ -23,8 +23,14 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 5000; // 5000 para desarrollo, 3000 en Docker (via .env.production)
+const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
+
+// ===== TRUST PROXY (necesario cuando está detrás de Nginx) =====
+// Permite que express-rate-limit identifique correctamente la IP real del cliente
+if (NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
 // ===== MIDDLEWARES DE SEGURIDAD =====
 
