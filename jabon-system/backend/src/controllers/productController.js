@@ -32,11 +32,11 @@ const createProduct = (req, res) => {
     const { nombre, tipo, aroma, presentacion, precio_costo, precio_venta, stock } = req.body;
 
     const stmt = db.prepare(`
-      INSERT INTO productos (nombre, tipo, aroma, presentacion, precio_costo, precio_venta, stock, activo)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+      INSERT INTO productos (nombre, aroma, presentacion, precio_costo, precio_venta, stock, activo)
+      VALUES (?, ?, ?, ?, ?, ?, 1)
     `);
 
-    const result = stmt.run(nombre, tipo, aroma, presentacion, precio_costo, precio_venta, stock || 0);
+    const result = stmt.run(nombre, aroma, presentacion, precio_costo, precio_venta, stock || 0);
 
     // Registrar el stock inicial si es mayor a 0
     if (stock && stock > 0) {

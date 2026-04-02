@@ -12,6 +12,7 @@ import Credits from './components/ui/Credits';
 import Configuracion from './components/ui/Configuracion';
 import Orders from './components/ui/Orders';
 import Analytics from './components/ui/Analytics';
+import Purchases from './components/ui/Purchases';
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -82,6 +83,7 @@ function App() {
       {currentView === 'analytics' && <Analytics />}
       {currentView === 'reports' && <Reports />}
       {currentView === 'orders' && <Orders />}
+      {currentView === 'purchases' && <Purchases />}
       {currentView === 'config' && <Configuracion />}
     </Layout>
   );

@@ -13,9 +13,10 @@ import {
   CreditCard,
   Settings,
   TrendingUp,
-  Truck
+  Truck,
+  ClipboardList
 } from "lucide-react";
-import InstallPWA from "./InstallPWA";
+
 import { getColombiaDateObject } from "../../utils/dateUtils";
 import Portal from "./Portal";
 
@@ -36,12 +37,13 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "sales", label: "Nueva venta", icon: ShoppingCart },
     { id: "orders", label: "Pedidos y Encargos", icon: Truck },
-    { id: "products", label: "Productos", icon: Package },
+    { id: "products", label: "Inventario", icon: Package },
     { id: "clients", label: "Clientes", icon: Users },
     { id: 'credits', label: 'Cuentas por Cobrar', icon: CreditCard },
     { id: "history", label: "Historial de ventas", icon: History },
     { id: "stockHistory", label: "Historial de Stock", icon: PackageCheck },
     { id: "analytics", label: "Análisis de Negocio", icon: TrendingUp },
+   { id: "purchases", label: "Registro de Compras", icon: ClipboardList },
     { id: "reports", label: "Reportes", icon: BarChart3 },
     //{ id: "config", label: "Configuración", icon: Settings },
   ];
@@ -52,12 +54,13 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
       <aside 
         className={`hidden ${desktopSidebarOpen ? 'lg:flex' : 'lg:hidden'} lg:flex-col w-64 bg-white border-r border-gray-200 shadow-sm transition-all duration-300`}
       >
-        <div className="p-0 border-b border-gray-200">
-          <div className="inline-flex w-25 h-30 just">
+        <div className="py-9 border-b border-gray-200 flex justify-center items-center">
+          <div className="w-40 h-auto flex justify-center items-center">
             <img
               draggable="false"
-              src="/img/Programmer-SINFONDO.png"
-              alt=""
+              src="/img/ServiLimpieza-Logo-removeGB.png"
+              alt="Logo"
+              className="w-full h-auto object-contain drop-shadow-sm"
             />
           </div>
         </div>
@@ -101,16 +104,20 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
               onClick={() => setSidebarOpen(false)}
             />
             <aside className="absolute left-0 top-0 bottom-0 w-64 bg-white shadow-xl">
-              <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-                <div className="inline-flex w-25 h-50 ">
+              <div className="p-4 py-5 border-b border-gray-200 flex justify-between items-center">
+                <div className="w-40 h-auto flex justify-center items-center">
                   <img
                     draggable="false"
-                    src="/img/Programmer-SINFONDO.png"
-                    alt=""
+                    src="/img/ServiLimpieza-Logo-removeGB.png"
+                    alt="Logo"
+                    className="w-full h-auto object-contain drop-shadow-sm"
                   />
                 </div>
 
-                <button onClick={() => setSidebarOpen(false)}>
+                <button 
+                  onClick={() => setSidebarOpen(false)}
+                  className="p-2 -mr-2 text-gray-500 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors"
+                >
                   <X size={24} />
                 </button>
               </div>
@@ -180,12 +187,8 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
           </div>
         </header>
 
-        {/* Content */}
         <main className="flex-1 overflow-auto p-4 lg:p-8">{children}</main>
       </div>
-
-      {/* PWA Install Prompt */}
-      <InstallPWA />
     </div>
   );
 };

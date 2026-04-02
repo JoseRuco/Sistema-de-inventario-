@@ -600,7 +600,7 @@ const Sales = () => {
                 >
                   <DollarSign className="w-4 h-4" />
                   <span className="hidden sm:inline">Contado</span>
-                  <span className="sm:hidden">$</span>
+                  <span className="sm:hidden">Contado</span>
                 </button>
 
                 {/* ✅ Deshabilitar crédito si es Cliente General */}
@@ -659,6 +659,7 @@ const Sales = () => {
                 >
                   <Wallet className="w-4 h-4" />
                   <span className="hidden sm:inline">Efectivo</span>
+                  <span className="sm:hidden">Efectivo</span>
                 </button>
                 <button
                   type="button"
@@ -670,8 +671,8 @@ const Sales = () => {
                   }`}
                 >
                   <CreditCard className="w-4 h-4" />
-                  <span className="hidden sm:inline">Transfer.</span>
-                  <span className="sm:hidden">Trans.</span>
+                  <span className="hidden sm:inline">Transferencia</span>
+                  <span className="sm:hidden">Transferencia</span>
                 </button>
               </div>
             </div>

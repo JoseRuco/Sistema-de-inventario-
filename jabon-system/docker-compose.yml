@@ -13,6 +13,8 @@ services:
     volumes:
       # Persistencia de base de datos y adjuntos
       - ./backend/db:/app/db
+      # Persistencia de archivos subidos (facturas, imágenes)
+      - ./backend/uploads:/app/uploads
       # Volumen para backups (crear carpeta backups en host)
       - ./backups:/app/backups
       # Variables de entorno (montado como read-only)

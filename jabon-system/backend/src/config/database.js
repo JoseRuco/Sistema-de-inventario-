@@ -148,6 +148,33 @@ const initDB = () => {
     )
   `);
 
+  // Tabla de compras (Registro de facturas de compra)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS compras (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      numero_factura TEXT UNIQUE NOT NULL,
+      fecha TEXT NOT NULL,
+      proveedor TEXT NOT NULL,
+      total REAL NOT NULL DEFAULT 0,
+      imagen_url TEXT NOT NULL,
+      notas TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Tabla de detalles de compras
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS compras_detalles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      compra_id INTEGER NOT NULL,
+      nombre_insumo TEXT NOT NULL,
+      cantidad REAL NOT NULL,
+      precio_unitario REAL NOT NULL,
+      subtotal REAL NOT NULL,
+      FOREIGN KEY (compra_id) REFERENCES compras(id)
+    )
+  `);
+
   // Insertar configuración por defecto si no existe
   const configCount = db.prepare('SELECT COUNT(*) as count FROM configuracion').get().count;
   if (configCount === 0) {
@@ -190,39 +217,45 @@ const initDB = () => {
     // En versiones antiguas se usaba 'tipo', ahora se usa nombre+aroma+presentacion
     if (columnsProd.includes('tipo')) {
       console.log('🔧 Migrando tabla productos: eliminando columna tipo (legacy)...');
-      db.exec(`
-        BEGIN TRANSACTION;
-        
-        CREATE TABLE IF NOT EXISTS productos_nueva (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          nombre TEXT NOT NULL,
-          aroma TEXT NOT NULL DEFAULT '',
-          presentacion TEXT NOT NULL DEFAULT '',
-          precio_costo REAL NOT NULL,
-          precio_venta REAL NOT NULL,
-          stock INTEGER NOT NULL DEFAULT 0,
-          activo INTEGER DEFAULT 1,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        );
+      try {
+        db.pragma('foreign_keys = OFF');
+        db.exec(`
+          BEGIN TRANSACTION;
+          
+          CREATE TABLE IF NOT EXISTS productos_nueva (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            aroma TEXT NOT NULL DEFAULT '',
+            presentacion TEXT NOT NULL DEFAULT '',
+            precio_costo REAL NOT NULL,
+            precio_venta REAL NOT NULL,
+            stock INTEGER NOT NULL DEFAULT 0,
+            activo INTEGER DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          );
 
-        INSERT INTO productos_nueva (id, nombre, aroma, presentacion, precio_costo, precio_venta, stock, activo, created_at)
-        SELECT 
-          id,
-          COALESCE(nombre, tipo, '') as nombre,
-          COALESCE(aroma, '') as aroma,
-          COALESCE(presentacion, '') as presentacion,
-          precio_costo,
-          precio_venta,
-          stock,
-          COALESCE(activo, 1),
-          created_at
-        FROM productos;
+          INSERT INTO productos_nueva (id, nombre, aroma, presentacion, precio_costo, precio_venta, stock, activo, created_at)
+          SELECT 
+            id,
+            COALESCE(nombre, tipo, '') as nombre,
+            COALESCE(aroma, '') as aroma,
+            COALESCE(presentacion, '') as presentacion,
+            precio_costo,
+            precio_venta,
+            stock,
+            COALESCE(activo, 1),
+            created_at
+          FROM productos;
 
-        DROP TABLE productos;
-        ALTER TABLE productos_nueva RENAME TO productos;
+          DROP TABLE productos;
+          ALTER TABLE productos_nueva RENAME TO productos;
 
-        COMMIT;
-      `);
+          COMMIT;
+        `);
+      } finally {
+        // Aseguramos que se vuelva a activar en cualquier caso
+        db.pragma('foreign_keys = ON');
+      }
       console.log('✅ Tabla productos migrada correctamente (columna tipo eliminada)');
     }
 
@@ -297,6 +330,9 @@ const initDB = () => {
       CREATE INDEX IF NOT EXISTS idx_ventas_cliente ON ventas(cliente_id);
       CREATE INDEX IF NOT EXISTS idx_ventas_estado ON ventas(estado_pago);
       CREATE INDEX IF NOT EXISTS idx_ventas_metodo ON ventas(metodo_pago);
+      CREATE INDEX IF NOT EXISTS idx_compras_fecha ON compras(fecha);
+      CREATE INDEX IF NOT EXISTS idx_compras_proveedor ON compras(proveedor);
+      CREATE INDEX IF NOT EXISTS idx_compras_numero ON compras(numero_factura);
     `);
     console.log('✅ Índices verificados/creados');
 

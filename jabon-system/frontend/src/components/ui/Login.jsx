@@ -13,7 +13,7 @@ const Login = ({ onLogin }) => {
   // CONFIGURACIÓN DE CREDENCIALES (Modificar aquí)
   const VALID_CREDENTIALS = {
     username: 'Administrador',
-    password: 'ProgrammerJR',
+    password: 'Servilimpieza2026',
 
   };
 

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const getAPIUrl = () => {
+export const getAPIUrl = () => {
   // 1. Permitir configuración por variable de entorno
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
@@ -22,7 +22,14 @@ const getAPIUrl = () => {
   return '/api';
 };
 
-const API_URL = getAPIUrl();
+export const API_URL = getAPIUrl();
+
+export const getFileUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  const base = API_URL.replace('/api', '');
+  return `${base}${path}`;
+};
 
 const api = axios.create({
   baseURL: API_URL,
@@ -118,5 +125,18 @@ export const getPendingOrdersCount = () => api.get('/orders/pending-count');
 // CONFIGURACIÓN
 export const getConfig = () => api.get('/config');
 export const updateConfig = (data) => api.post('/config', data);
+
+// ========== COMPRAS / REGISTRO DE COMPRAS ==========
+export const getPurchases = (params) => {
+  const query = new URLSearchParams({
+    ...params,
+    _t: Date.now()
+  }).toString();
+  return api.get(`/purchases?${query}`);
+};
+export const getPurchase = (id) => api.get(`/purchases/${id}`);
+export const createPurchase = (formData) => api.post('/purchases', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
 
 export default api;

@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+
 import Portal from './Portal';
 
 const ClientFormModal = ({ isOpen, editingClient, formData, setFormData, onSubmit, onClose }) => {
