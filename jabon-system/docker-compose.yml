@@ -22,6 +22,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - DB_PATH=./db/inventory.db
     restart: unless-stopped
     healthcheck:
       test:
