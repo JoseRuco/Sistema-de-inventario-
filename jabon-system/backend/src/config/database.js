@@ -3,7 +3,7 @@ const path = require('path');
 
 const dbPath = process.env.DB_PATH 
   ? path.resolve(__dirname, '../../', process.env.DB_PATH) 
-  : path.resolve(__dirname, '../../db/inventory.db');
+  : path.resolve(__dirname, '../../db/DataBase.db');
 
 const db = new Database(dbPath);
 console.log('✅ Base de datos conectada en:', dbPath);

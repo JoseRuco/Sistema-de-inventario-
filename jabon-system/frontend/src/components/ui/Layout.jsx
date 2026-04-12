@@ -45,7 +45,7 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
     { id: "analytics", label: "Análisis de Negocio", icon: TrendingUp },
    { id: "purchases", label: "Registro de Compras", icon: ClipboardList },
     { id: "reports", label: "Reportes", icon: BarChart3 },
-    //{ id: "config", label: "Configuración", icon: Settings },
+    { id: "config", label: "Configuración", icon: Settings },
   ];
 
   return (
@@ -72,7 +72,7 @@ const Layout = ({ children, currentView, setCurrentView, onLogout }) => {
               <button
                 key={item.id}
                 onClick={() => setCurrentView(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-lg transition-all ${currentView === item.id
+                className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all ${currentView === item.id
                   ? "bg-primary text-white shadow-md"
                   : "text-gray-700 hover:bg-gray-100"
                   }`}
